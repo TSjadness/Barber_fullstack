@@ -1,0 +1,1 @@
+{"name":"barberflow-backend","version":"1.0.0","private":true,"scripts":{"dev":"node --watch src/server.js","start":"node src/server.js","test":"node --test tests/*.test.js"},"engines":{"node":">=20"}}
