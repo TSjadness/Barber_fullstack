@@ -1,97 +1,70 @@
-# BarberFlow / Áureo Barber — projeto full stack local
+# BarberFlow — ambiente local SQLite + Supabase original
 
-Protótipo funcional de agendamentos de barbearia com site público, gestão administrativa e API Node.js. Interface preto/dourado, calendário com cores e horários semanais individuais. A interface reutiliza o preview aprovado, com integração real via HTTP.
+Projeto organizado em **frontend/** (React, TypeScript, Styled Components, `src/mock/db.json`) e **backend/** (servidor REST local, SQLite, migrations, seeds, testes). No modo mock, o frontend **não depende de uma service role key do Supabase**.
 
-## Requisitos
+## Pré-requisito
 
-- Node.js 20 ou superior
-- Nenhuma dependência externa e nenhum `npm install` necessário
+**Node.js 22.16.0 ou superior da linha 22** (ou uma versão posterior que suporte `node:sqlite`). Verifique com `node -v`. O módulo SQLite nativo ainda pode exibir um aviso experimental; isso não significa erro.
 
-## Iniciar no Windows, Mac ou Linux
+## Executar no Windows / VS Code
 
-Abra **dois terminais** na pasta do projeto.
+Terminal 1 — a partir da pasta principal:
 
-**Terminal 1 — API**
-```bash
+```cmd
 cd backend
-npm start
+npm run db:migrate
+npm run db:seed
+npm run dev
 ```
 
-**Terminal 2 — site**
-```bash
+Terminal 2 — abra outro terminal **na pasta principal**:
+
+```cmd
 cd frontend
-npm start
+npm install
+npm run dev
 ```
 
-Visite **http://localhost:5173**. O backend usa **http://localhost:3333**.
+- Frontend: **http://localhost:8080** (confirme a URL indicada pelo Vite).
+- Backend: **http://127.0.0.1:3333/health**.
+- Painel: **http://localhost:8080/login**.
+- Credenciais de demonstração (somente local): **admin@rafaeluzeda.com** / **Barbearia@2026**. Troque `MOCK_USER` e `MOCK_PASSWORD` antes do primeiro `db:seed` para personalizar; não use essas credenciais publicamente.
 
-Conta inicial **somente para desenvolvimento**:
-- Email: `admin@aureobarber.local`
-- Senha: `Admin@12345`
+O backend cria o banco automaticamente caso esteja vazio e não sobrescreve registros durante novos seeds. Os agendamentos e mudanças do painel persistem em `backend/data/barberflow.sqlite` mesmo após reiniciar os servidores.
 
-Altere o email e senha em `backend/.env` **antes da primeira inicialização**. O usuário é criado no primeiro boot e salvo em `backend/data/database.json`; mudanças posteriores no `.env` não alteram uma conta existente.
+## Escolher a fonte de dados
 
-## Organização
+Em `frontend/.env` (reinicie o Vite após modificar):
 
-```text
-barberflow-fullstack/
-  frontend/
-    index.html       # site do cliente + painel da gestão
-    server.js        # servidor web estático local
-    .env             # VITE_API_URL=http://localhost:3333/api
-    .env.example
-    package.json
-  backend/
-    src/server.js    # API, autenticação, regras de agenda e persistência
-    data/            # JSON persistente criado automaticamente
-    .env             # PORT, FRONTEND_ORIGIN, ADMIN_EMAIL, ADMIN_PASSWORD
-    .env.example
-    package.json
+```env
+VITE_API_MODE=mock
+VITE_API_URL=http://localhost:3333
 ```
 
-## Rotas
+`mock`: chamadas feitas pelo `BarberApp` usam o servidor SQLite local (recomendado para testar). `supabase`: mantém o caminho original com funções TanStack Start e Supabase; as operações com `supabaseAdmin` precisam de uma chave de servidor válida no ambiente do servidor. **Não insira `SUPABASE_SERVICE_ROLE_KEY` com prefixo `VITE_`.**
 
-- `GET /api/health` verifica conectividade
-- `GET /api/public` retorna catálogo, agenda ocupada (sem telefones) e avisos
-- `POST /api/bookings` cria um agendamento com checagem de conflitos no servidor
-- `POST /api/login` autentica o proprietário
-- `POST /api/logout` encerra a sessão
-- `GET /api/admin/state` lê dados completos (token requerido)
-- `PUT /api/admin/state` persiste a administração (token requerido)
+## Banco e migrations
 
-## Como testar
+- `backend/src/database/migrations/0001_initial.sql`: tabelas SQLite `app_state`, `bookings`, `local_users`, `local_sessions`, `local_password_resets`; `schema_migrations` controla versões.
+- `frontend/src/mock/db.json`: seed **derivado da migration original**, não um backup dos registros reais do Supabase.
+- `npm run db:migrate`: aplica migrations ainda não executadas.
+- `npm run db:seed`: cria dados iniciais e proprietário local se estiverem ausentes, **sem apagar alterações existentes**.
+- `npm run db:status`: lista as migrations e quantos agendamentos estão armazenados.
+- `npm run db:reset -- --confirm`: **APAGA o banco SQLite local**. Depois execute `npm run db:seed` para recriá-lo.
+- `npm test`: testa formato do seed, autenticação, privacidade dos dados públicos e persistência após reinicialização.
 
-1. Inicie ambos os servidores e abra o site.
-2. Clique em **Gestão** e entre com a conta de teste.
-3. Edite **Horários da semana**, serviços ou aviso de fechamento.
-4. Clique em **Site do cliente** e agende um horário livre.
-5. Volte a **Gestão → Agendamentos** para visualizar e marcar como pago.
-6. Recarregue a página para verificar a persistência no backend.
-7. Abra uma aba anônima para testar o site público sem autenticação.
+## Endpoints do servidor local
 
-## Limites desta versão
+`GET /health`, `GET /public`, `GET /owner-exists`, `POST /bookings`, `POST /login`, `POST /logout`, `GET /admin/state` (login), `PUT /admin/state` (login), `POST /forgot`, `POST /reset`.
 
-Este é um projeto full stack local de validação, não uma implantação pronta para produção. O JSON é persistente, mas não oferece transações multi-processo, versionamento de alterações nem proteção contra gravações concorrentes entre dois administradores. A administração usa atualização do estado completo, adequada apenas a uma demonstração local com um gestor de cada vez. A checagem de conflitos é feita no backend de processo único. Não há recuperação de senha, auditoria, rate limiting distribuído, integração WhatsApp, pagamentos online nem banco SQL. A sessão fica em `sessionStorage`, expira em 8 horas e o login é limitado ao proprietário cadastrado. Não publique a API na internet sem evoluir autenticação, controle de acesso, banco de dados, logs e proteção contra abuso.
+A senha de acesso local é protegida por `scrypt`; sessões usam tokens gerados aleatoriamente e armazenados no SQLite por hash. Rotas de gestão exigem token. O endpoint público remove informações privadas de clientes dos agendamentos e lista de pagamentos.
 
-O frontend atual é HTML/CSS/JS sem framework para manter o preview visual e permitir rodar imediatamente. Uma futura migração para React + TypeScript e módulos separados está indicada no prompt do preview, mas **não foi implementada nesta entrega**.
+**Recuperação de senha:** não há disparo real de e-mail em modo local. Opcionalmente, iniciar o servidor com `MOCK_ALLOW_PASSWORD_RESET=1` habilita um fluxo de código de teste mostrado **apenas no terminal backend**. Esse recurso é estritamente de desenvolvimento.
 
-## Atualização visual — versão premium aprovada
+## Escopo e limitações
 
-- **Visão Geral:** quatro KPIs essenciais, cinco próximos atendimentos clicáveis, faturamento semanal e ações rápidas. Sem calendário duplicado.
-- **Agenda:** quadro claro com profissionais em colunas dentro do painel escuro, navegação de datas, cartões por status e rolagem horizontal com coluna de horário fixa.
-- **Detalhes:** clique em um atendimento para alterar o status/pagamento, editar dados ou cancelar logicamente (preserva histórico). A edição local confere o expediente e possíveis colisões antes de enviar uma atualização ao backend.
-- **Financeiro:** exporta CSV UTF-8 com BOM e separador `;` que pode ser aberto no Microsoft Excel. A importação permite selecionar e inspecionar CSV exportado, mas **não grava** automaticamente: ainda requer módulo de conciliação e validação de registros. Não é exportação `.xlsx` nativa.
-- **Site do cliente:** mantém serviço → profissional ou sem preferência → calendário por disponibilidade → confirmação com sobreposição.
-
-### Limites da versão
-
-Projeto local para demonstração e desenvolvimento. O backend persiste em JSON e o painel usa uma atualização administrativa do estado completo. **Não é indicado para hospedagem pública, múltiplos administradores simultâneos ou uso comercial sem revisão de segurança, validação transacional de atualizações, permissões, testes de navegador e banco de dados.** Também não há disparo real pelo WhatsApp, integração financeira nem cobrança. As fontes externas e a fotografia do hero necessitam de acesso à internet; caso contrário, permanece um fundo escuro legível.
-
-### Validação efetuada
-
-- Sintaxe JavaScript e inicialização de frontend/backend.
-- GET `/api/health` e autenticação com as credenciais locais.
-- Carregamento HTTP do arquivo frontend.
-
-Não foram realizados testes E2E em navegador nesta entrega. A aparência segue o estilo dos previews aprovados, mas não representa uma reprodução pixel a pixel da imagem gerada.
-"# Petshop_fullstack" 
+- Preservados os arquivos de integração Supabase, layout e lógica das telas atuais.
+- `frontend/public/barber/app.js` **ainda usa JavaScript imperativo** para renderizar telas: a conversão completa para componentes React não fazia parte desta implementação de banco local.
+- `app_state` mantém arrays `services`, `staff`, `notices`, `payments` em colunas JSON, **conforme o schema original do Supabase**; `bookings` é uma tabela independente.
+- Sem sincronização automática entre Supabase e banco local. Sem cópia dos usuários e registros reais da Lovable; apenas a estrutura e o seed disponível no repositório.
+- Servidor local vinculado a `127.0.0.1`, não destinado à produção ou rede pública. Autenticação local não substitui Supabase Auth em produção.

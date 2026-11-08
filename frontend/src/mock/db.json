@@ -1,0 +1,67 @@
+{
+  "shop": {
+    "name": "Barbearia Rafael Úzeda",
+    "tagline": "Tradição no corte. Excelência nos detalhes.",
+    "whatsapp": "",
+    "address": "Seu espaço, sua experiência."
+  },
+  "services": [
+    {
+      "id": "s1",
+      "name": "Corte masculino",
+      "duration": 30,
+      "price": 40,
+      "icon": "✂️",
+      "active": true
+    },
+    {
+      "id": "s2",
+      "name": "Barba",
+      "duration": 30,
+      "price": 30,
+      "icon": "🪒",
+      "active": true
+    },
+    {
+      "id": "s3",
+      "name": "Cabelo + barba",
+      "duration": 60,
+      "price": 65,
+      "icon": "💈",
+      "active": true
+    },
+    {
+      "id": "s4",
+      "name": "Acabamento",
+      "duration": 20,
+      "price": 20,
+      "icon": "✨",
+      "active": true
+    }
+  ],
+  "staff": [
+    {
+      "id": "p1",
+      "name": "Rafael Úzeda",
+      "role": "Proprietário • Barbeiro",
+      "start": "09:00",
+      "end": "18:00",
+      "days": [1, 2, 3, 4, 5, 6],
+      "active": true,
+      "photo": "/barber/assets/barbeiro_rafael.webp"
+    },
+    {
+      "id": "p2",
+      "name": "Alê",
+      "role": "Barbeiro",
+      "start": "10:00",
+      "end": "19:00",
+      "days": [2, 3, 4, 5, 6],
+      "active": true,
+      "photo": "/barber/assets/barbeiro_ale.png"
+    }
+  ],
+  "bookings": [],
+  "notices": [],
+  "payments": []
+}

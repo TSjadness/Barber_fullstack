@@ -1,0 +1,105 @@
+{
+  "shop": {
+    "name": "Barbearia - Rafael Úzeda",
+    "phone": "(79) 99607-0420",
+    "address": "Av. Walter Franco, 876 - Av. do Colégio Magnus, Rotary Club de Itabaiana - Itabaiana/SE, 49506-219",
+    "tagline": "Minha prioridade é a sua autoestima. Desde 2018.",
+    "whatsapp": "5579996070420",
+    "instagram": "https://www.instagram.com/rafaeluzeda_"
+  },
+  "services": [
+    {
+      "id": "s1",
+      "icon": "scissors",
+      "name": "Corte Masculino",
+      "price": 35,
+      "active": true,
+      "duration": 30
+    },
+    {
+      "id": "s2",
+      "icon": "brush",
+      "name": "Barba",
+      "price": 20,
+      "active": true,
+      "duration": 30
+    },
+    {
+      "id": "s3",
+      "icon": "combo",
+      "name": "Cabelo e Barba",
+      "price": 50,
+      "active": true,
+      "duration": 60
+    },
+    {
+      "id": "s5",
+      "icon": "star",
+      "name": "Degradê Navalhado",
+      "price": 40,
+      "active": true,
+      "duration": 60
+    },
+    {
+      "id": "s4",
+      "icon": "spray",
+      "name": "Pezinho",
+      "price": 15,
+      "active": true,
+      "duration": 15
+    },
+    {
+      "id": "s6",
+      "icon": "spray",
+      "name": "Pezinho e sobrancelha",
+      "price": 15,
+      "active": true,
+      "duration": 30
+    }
+  ],
+  "staff": [
+    {
+      "id": "p1",
+      "end": "18:00",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "name": "Rafael Úzeda",
+      "role": "Proprietário • Barbeiro",
+      "photo": "/assets/barbeiro_rafael.webp",
+      "start": "09:00",
+      "active": true
+    },
+    {
+      "id": "p2",
+      "end": "19:00",
+      "days": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "name": "Ale",
+      "role": "Barbeiro",
+      "photo": "/assets/barbeiro_ale.png",
+      "start": "10:00",
+      "active": true
+    }
+  ],
+  "notices": [],
+  "payments": [],
+  "bookings": [],
+  "users": [
+    {
+      "email": "admin@rafaeluzeda.com",
+      "role": "owner",
+      "password": "1bf702680de8ae793d74c2bad209ef70:1ce216e622cb1db7e95ba933224a74bac9326a6d8d5e7da8fd6fcf3026c327b51294f9d8da72d72f773df91dfed294ae16dc0ab1376238e95e5b85cf572da746"
+    }
+  ]
+}

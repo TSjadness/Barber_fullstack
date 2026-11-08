@@ -1,4 +1,3 @@
+data/database.json
+data/database.json.tmp
 node_modules/
-*.log
-backend/data/database.json
-.env

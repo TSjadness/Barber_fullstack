@@ -1,0 +1,9 @@
+[
+ {"capability":"code/ui","source":"frontend/index.html","outcome":"migrate","status":"done","next_action":"none"},
+ {"capability":"schema","source":"backend JSON file","outcome":"migrate","status":"done","next_action":"none"},
+ {"capability":"records","source":"backend/data/database.json (not in archive)","outcome":"migrate","status":"pending","next_action":"user to supply database.json if real bookings exist"},
+ {"capability":"auth","source":"single owner account (scrypt)","outcome":"migrate","status":"done","next_action":"first sign-in creates owner account with email confirmation"},
+ {"capability":"authorization","source":"owner-only admin API","outcome":"migrate","status":"done","next_action":"none"},
+ {"capability":"booking conflict checks","source":"checkSlot","outcome":"migrate","status":"verified","next_action":"none"},
+ {"capability":"external providers","source":"none","outcome":"none","status":"n/a","next_action":"none"}
+]

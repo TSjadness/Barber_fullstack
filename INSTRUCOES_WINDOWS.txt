@@ -1,9 +1,0 @@
-1. Instale o Node.js 20 ou mais recente.
-2. Extraia o ZIP.
-3. Abra o terminal na pasta barberflow-fullstack/backend e rode: npm start
-4. Abra outro terminal em barberflow-fullstack/frontend e rode: npm start
-5. Navegador: http://localhost:5173
-6. Gestão: admin@aureobarber.local / Admin@12345 (somente teste)
-7. Edite frontend/.env para trocar a URL da API.
-8. Edite backend/.env ANTES da primeira execução para trocar o login inicial.
-Consulte README.md para detalhes e limitações.
