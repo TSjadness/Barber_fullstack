@@ -5031,7 +5031,6 @@ body.bf-cal-lock {
   }
 }
 
-
 /* ===== Calendario mensal: correcoes de tela cheia para tablet/mobile =====
    Layout desktop preservado. Calendario e painel do dia nao se sobrepoem. */
 @media (max-width: 1000px) {
@@ -5114,15 +5113,25 @@ body.bf-cal-lock {
     padding: 4px;
     gap: 3px;
   }
-  .bcal-full .bcal-events { display: none; }
-  .bcal-full .bcal-dots { display: flex; }
-  .bcal-full .bcal-body { gap: 14px; }
+  .bcal-full .bcal-events {
+    display: none;
+  }
+  .bcal-full .bcal-dots {
+    display: flex;
+  }
+  .bcal-full .bcal-body {
+    gap: 14px;
+  }
   .bcal-full .bcal-panel {
     padding: 12px;
     scroll-margin-top: 12px;
   }
-  .bcal-full .bcal-panel-head { flex-wrap: wrap; }
-  .bcal-full .bcal-list { min-width: 0; }
+  .bcal-full .bcal-panel-head {
+    flex-wrap: wrap;
+  }
+  .bcal-full .bcal-list {
+    min-width: 0;
+  }
   .bcal-full .bcal-item {
     grid-template-columns: auto minmax(0, 1fr);
     overflow-wrap: anywhere;
@@ -5134,7 +5143,39 @@ body.bf-cal-lock {
   }
 }
 @media (max-width: 360px) {
-  .bcal-full .bcal-nav { grid-template-columns: 34px minmax(0, 1fr) minmax(0, 0.8fr) 34px; gap: 5px; }
-  .bcal-full .bcal-legend { font-size: 11px; }
-  .bcal-full .bcal-panel { padding: 10px; }
+  .bcal-full .bcal-nav {
+    grid-template-columns: 34px minmax(0, 1fr) minmax(0, 0.8fr) 34px;
+    gap: 5px;
+  }
+  .bcal-full .bcal-legend {
+    font-size: 11px;
+  }
+  .bcal-full .bcal-panel {
+    padding: 10px;
+  }
+}
+
+/* Ajuste pontual: centralizar o controle no sidebar recolhido (desktop). */
+@media (min-width: 761px) {
+  .admin.side-collapsed .sidebar .side-top {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+  }
+  .admin.side-collapsed .sidebar .side-top .side-label {
+    display: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+  }
+  .admin.side-collapsed .sidebar .side-toggle {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    margin: 0 auto 10px !important;
+  }
 }
