@@ -856,6 +856,20 @@ function selectCalDay(day) {
   calDay = day;
   adminCalMonth = day.slice(0, 7);
   render();
+  // No mobile, o dia selecionado fica abaixo do mes. Leva ate o painel.
+  if (window.matchMedia("(max-width: 760px)").matches) {
+    requestAnimationFrame(() => {
+      const panel = document.querySelector(".bcal-panel");
+      if (!panel) return;
+      const scroller = document.querySelector(".bcal-shell.bcal-full");
+      if (scroller) {
+        const delta = panel.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+        scroller.scrollTo({ top: scroller.scrollTop + delta - 12, behavior: "smooth" });
+      } else {
+        panel.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  }
 }
 function setCalFull(on) {
   calFull = !!on;

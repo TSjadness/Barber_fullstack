@@ -5030,3 +5030,111 @@ body.bf-cal-lock {
     gap: 6px;
   }
 }
+
+
+/* ===== Calendario mensal: correcoes de tela cheia para tablet/mobile =====
+   Layout desktop preservado. Calendario e painel do dia nao se sobrepoem. */
+@media (max-width: 1000px) {
+  .bcal-shell.bcal-full {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  .bcal-full .bcal-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    flex: 0 0 auto;
+    min-height: auto;
+    gap: 16px;
+    overflow: visible;
+  }
+  .bcal-full .bcal-main,
+  .bcal-full .bcal-panel {
+    min-width: 0;
+    min-height: auto;
+    overflow: visible;
+  }
+  .bcal-full .bcal-panel {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    max-height: none;
+    flex: none;
+    z-index: auto;
+  }
+}
+@media (max-width: 760px) {
+  .bcal-shell.bcal-full {
+    padding: 12px 10px 24px;
+    height: 100dvh;
+    max-height: 100dvh;
+  }
+  .bcal-full .bcal-toolbar {
+    flex: 0 0 auto;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .bcal-full .bcal-nav {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) minmax(0, 0.85fr) 36px;
+    gap: 7px;
+    align-items: center;
+  }
+  .bcal-full .bcal-nav > button,
+  .bcal-full .bcal-nav > select {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+  }
+  .bcal-full .bcal-nav > button:nth-child(5) {
+    grid-column: 1 / -1;
+    justify-self: start;
+    width: auto;
+  }
+  .bcal-full .bcal-legend {
+    flex: 1 1 auto;
+    gap: 8px;
+    align-items: center;
+    min-width: 0;
+  }
+  .bcal-full .bcal-full-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+  .bcal-full .bcal-weekdays {
+    position: static;
+    margin-bottom: 6px;
+    padding: 0;
+  }
+  .bcal-full .bcal-day {
+    min-height: 58px;
+    padding: 4px;
+    gap: 3px;
+  }
+  .bcal-full .bcal-events { display: none; }
+  .bcal-full .bcal-dots { display: flex; }
+  .bcal-full .bcal-body { gap: 14px; }
+  .bcal-full .bcal-panel {
+    padding: 12px;
+    scroll-margin-top: 12px;
+  }
+  .bcal-full .bcal-panel-head { flex-wrap: wrap; }
+  .bcal-full .bcal-list { min-width: 0; }
+  .bcal-full .bcal-item {
+    grid-template-columns: auto minmax(0, 1fr);
+    overflow-wrap: anywhere;
+  }
+  .bcal-full .bcal-item .status {
+    grid-column: 2;
+    justify-self: start;
+    margin: 0;
+  }
+}
+@media (max-width: 360px) {
+  .bcal-full .bcal-nav { grid-template-columns: 34px minmax(0, 1fr) minmax(0, 0.8fr) 34px; gap: 5px; }
+  .bcal-full .bcal-legend { font-size: 11px; }
+  .bcal-full .bcal-panel { padding: 10px; }
+}
