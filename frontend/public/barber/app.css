@@ -5179,3 +5179,58 @@ body.bf-cal-lock {
     margin: 0 auto 10px !important;
   }
 }
+
+/* ===== Sidebar mobile: painel e cabeçalho presos à viewport =====
+   Regra isolada: não modifica a aparência nem o menu desktop. */
+@media (max-width: 760px) {
+  html.bf-mobile-menu-lock {
+    overflow: hidden !important;
+    overscroll-behavior: none;
+  }
+  body.bf-mobile-menu-lock {
+    position: fixed !important;
+    top: var(--bf-locked-scroll-top, 0px);
+    left: 0;
+    right: 0;
+    width: 100%;
+    overflow: hidden !important;
+    overscroll-behavior: none;
+  }
+  body.bf-mobile-menu-lock .topbar:not(.topbar-public) {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 90;
+  }
+  .admin.bf-mobile-open .sidebar {
+    position: fixed !important;
+    top: 65px !important;
+    bottom: 0 !important;
+    height: auto !important;
+    max-height: calc(100dvh - 65px);
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .admin.bf-mobile-open .sidebar .side-top {
+    flex: 0 0 auto !important;
+  }
+  .admin.bf-mobile-open .sidebar .side-menu {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin.bf-mobile-open .sidebar .side-foot {
+    flex: 0 0 auto !important;
+  }
+  .admin.bf-mobile-open .bf-mobile-backdrop {
+    position: fixed !important;
+    top: 65px !important;
+    bottom: 0 !important;
+  }
+}

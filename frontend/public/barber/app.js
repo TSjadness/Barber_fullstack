@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 const SVC_ICONS = [
   ["scissors", "Tesoura"],
   ["brush", "Pincel"],
@@ -1243,24 +1244,38 @@ window.__barberRemount = (v) => {
   render();
   window.scrollTo(0, 0);
 };
+// Guardamos a rolagem da página antes de imobilizar o fundo no mobile.
+// Assim o cabeçalho e o menu ficam unidos à viewport, sem pular ao abrir/fechar.
+let bfSidebarScrollY = null;
 function toggleMobileMenu() {
   const admin = document.querySelector(".admin");
   if (!admin) return;
-  const open = !admin.classList.contains("bf-mobile-open");
-  admin.classList.toggle("bf-mobile-open", open);
-  document.body.classList.toggle("bf-mobile-menu-lock", open);
+  if (admin.classList.contains("bf-mobile-open")) {
+    closeMobileMenu();
+    return;
+  }
+  if (window.matchMedia("(max-width: 760px)").matches) {
+    bfSidebarScrollY = window.scrollY;
+    document.body.style.setProperty("--bf-locked-scroll-top", `-${bfSidebarScrollY}px`);
+    document.documentElement.classList.add("bf-mobile-menu-lock");
+    document.body.classList.add("bf-mobile-menu-lock");
+  }
+  admin.classList.add("bf-mobile-open");
   const button = document.querySelector(".bf-mobile-menu-button");
   if (button) {
-    button.setAttribute("aria-expanded", String(open));
-    button.setAttribute("aria-label", open ? "Fechar menu da gestão" : "Abrir menu da gestão");
-  }
-  if (open) {
-    admin.querySelector(".side-menu .side-btn.active")?.scrollIntoView({ block: "nearest" });
+    button.setAttribute("aria-expanded", "true");
+    button.setAttribute("aria-label", "Fechar menu da gestão");
   }
 }
 function closeMobileMenu() {
   document.querySelector(".admin")?.classList.remove("bf-mobile-open");
+  const wasLocked = bfSidebarScrollY !== null;
+  const previousScroll = bfSidebarScrollY;
+  bfSidebarScrollY = null;
+  document.documentElement.classList.remove("bf-mobile-menu-lock");
   document.body.classList.remove("bf-mobile-menu-lock");
+  document.body.style.removeProperty("--bf-locked-scroll-top");
+  if (wasLocked) window.scrollTo(0, previousScroll);
   const button = document.querySelector(".bf-mobile-menu-button");
   if (button) {
     button.setAttribute("aria-expanded", "false");
@@ -1270,6 +1285,7 @@ function closeMobileMenu() {
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeMobileMenu();
 });
+window.matchMedia("(max-width: 760px)").addEventListener("change", () => closeMobileMenu());
 function toggleSide() {
   sideCollapsed = !sideCollapsed;
   localStorage.setItem("barberSide", sideCollapsed ? "1" : "0");
