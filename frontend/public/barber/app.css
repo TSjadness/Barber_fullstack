@@ -2187,6 +2187,35 @@ body {
   }
 }
 
+/* Acesso rápido - responsividade mobile */
+@media (max-width: 700px) {
+  .premium-overview .ov-shortcuts {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .premium-overview .ov-shortcuts > strong {
+    display: block;
+    width: 100%;
+  }
+
+  .premium-overview .ov-shortcuts > .btn {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    min-height: 46px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+    margin: 0;
+  }
+}
+
 /* Refinamento 2026 — iconografia em linha e acabamento */
 .ic {
   width: 1.05em;
@@ -4800,4 +4829,78 @@ body.bf-cal-lock {
   padding: 0 8px;
   font-weight: 600;
   font-size: 0.9rem;
+}
+
+/* ===== Visão Geral: próximos atendimentos (somente mobile) ===== */
+@media (max-width: 700px) {
+  .premium-overview .ov-columns > .ov-panel:first-child {
+    min-width: 0;
+    padding: 14px 12px;
+  }
+
+  .premium-overview .ov-columns > .ov-panel:first-child .ov-panel-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .premium-overview .ov-columns > .ov-panel:first-child .ov-panel-head h2 {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  .premium-overview .ov-columns > .ov-panel:first-child .ov-panel-head .text-action {
+    flex: 0 0 auto;
+    max-width: 48%;
+    font-size: 11px;
+    line-height: 1.4;
+    white-space: normal;
+    text-align: right;
+  }
+
+  .premium-overview .next-booking {
+    grid-template-columns: 62px minmax(0, 1fr) auto;
+    gap: 9px;
+    min-width: 0;
+    padding: 12px 0;
+    align-items: center;
+  }
+
+  .premium-overview .next-time {
+    padding: 9px 5px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .premium-overview .next-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .premium-overview .next-name strong {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .premium-overview .next-name small {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .premium-overview .next-staff {
+    display: none;
+  }
+
+  .premium-overview .next-booking > .status {
+    grid-column: 3;
+    justify-self: end;
+    align-self: center;
+    margin: 0;
+    white-space: nowrap;
+    font-size: 10px;
+    padding: 6px 8px;
+  }
 }
