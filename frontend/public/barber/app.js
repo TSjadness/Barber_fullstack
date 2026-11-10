@@ -1072,21 +1072,18 @@ function adminContent() {
   }
   if (section === "agenda") {
     const allAgendaStaff = db.staff.filter((p) => p.active);
-    if (selectedAgendaStaff === null)
-      selectedAgendaStaff = window.matchMedia("(max-width:760px)").matches
-        ? allAgendaStaff[0]?.id || "all"
-        : "all";
+    if (selectedAgendaStaff === null) selectedAgendaStaff = "all";
     if (selectedAgendaStaff !== "all" && !allAgendaStaff.some((p) => p.id === selectedAgendaStaff))
       selectedAgendaStaff = "all";
     const employees =
-      window.matchMedia("(max-width:760px)").matches && selectedAgendaStaff !== "all"
-        ? allAgendaStaff.filter((p) => p.id === selectedAgendaStaff)
-        : allAgendaStaff;
+      selectedAgendaStaff === "all"
+        ? allAgendaStaff
+        : allAgendaStaff.filter((p) => p.id === selectedAgendaStaff);
     const daybook = activeBookings().filter((b) => b.date === date);
     const isBooked = (b) =>
       b.status === "concluido" ? "done" : b.status === "pendente" ? "pending" : "scheduled";
     const times = Array.from({ length: 25 }, (_, i) => clock(8 * 60 + i * 30));
-    const count = daybook.length;
+    const count = daybook.filter((b) => employees.some((p) => p.id === b.staffId)).length;
     const possible = employees.reduce(
       (n, p) =>
         n +
@@ -1112,7 +1109,7 @@ function adminContent() {
      .sort()
      .map((v) => `<option ${v === c ? "selected" : ""}>${v}</option>`)
      .join("");
- })()}</select><button class="btn small" onclick="changeAgendaDate(addDays(date,1))">${ic("chevRight")}</button></div><label class="bf-agenda-staff-filter"><span>Profissional</span><select aria-label="Selecionar profissional da agenda" onchange="selectedAgendaStaff=this.value;refreshAgendaStaff()"><option value="all" ${selectedAgendaStaff === "all" ? "selected" : ""}>Todos os profissionais</option>${allAgendaStaff.map((p) => `<option value="${p.id}" ${selectedAgendaStaff === p.id ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select></label><span class="muted bf-agenda-swipe-hint">Arraste horizontalmente para visualizar outros profissionais ${ic("arrowRight")}</span></div>
+ })()}</select><button class="btn small" onclick="changeAgendaDate(addDays(date,1))">${ic("chevRight")}</button></div><label class="bf-agenda-staff-filter"><span>Profissional</span><select aria-label="Selecionar profissional da agenda" onchange="selectedAgendaStaff=this.value;refreshAgendaStaff()"><option value="all" ${selectedAgendaStaff === "all" ? "selected" : ""}>Todos os profissionais</option>${allAgendaStaff.map((p) => `<option value="${p.id}" ${selectedAgendaStaff === p.id ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select></label>${selectedAgendaStaff === "all" && allAgendaStaff.length > 1 ? `<span class="muted bf-agenda-swipe-hint">${ic("arrowRight")} <span>Deslize a agenda para ver outros profissionais</span></span>` : ""}</div>
  ${db.notices
    .filter((n) => n.date === date)
    .map(
