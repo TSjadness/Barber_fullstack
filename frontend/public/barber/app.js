@@ -266,6 +266,57 @@ function monthCalendar(d) {
 }
 let bf = { date: "", service: "", staff: "", name: "", status: "" },
   cf = { name: "", staff: "" };
+const PAGE_SIZE = 10;
+let pageState = { bookings: 1, clients: 1, services: 1, staff: 1, notices: 1 };
+function clampPage(sectionKey, totalItems, size = PAGE_SIZE) {
+  const totalPages = Math.max(1, Math.ceil(totalItems / size));
+  pageState[sectionKey] = Math.min(Math.max(pageState[sectionKey] || 1, 1), totalPages);
+  return totalPages;
+}
+function paginate(items, sectionKey, size = PAGE_SIZE) {
+  const totalPages = clampPage(sectionKey, items.length, size);
+  const currentPage = pageState[sectionKey] || 1;
+  const start = (currentPage - 1) * size;
+  return {
+    items: items.slice(start, start + size),
+    total: items.length,
+    currentPage,
+    totalPages,
+    start: items.length ? start + 1 : 0,
+    end: Math.min(start + size, items.length),
+  };
+}
+function pagination(sectionKey, meta, label = 'itens') {
+  const totalPages = meta.totalPages;
+  const current = meta.currentPage;
+  const pages = [];
+  // Em telas pequenas, exibe ate cinco paginas vizinhas com reticencias.
+  const windowSize = 5;
+  const first = Math.max(1, Math.min(current - 2, totalPages - windowSize + 1));
+  const last = Math.min(totalPages, first + windowSize - 1);
+  if (first > 1) {
+    pages.push(`<button type="button" class="bf-page-number" onclick="goToPage('${sectionKey}',1)" aria-label="Pagina 1">1</button>`);
+    if (first > 2) pages.push(`<span class="bf-page-ellipsis" aria-hidden="true">…</span>`);
+  }
+  for (let i = first; i <= last; i++) {
+    pages.push(`<button type="button" class="bf-page-number ${i === current ? 'is-current' : ''}" onclick="goToPage('${sectionKey}',${i})" ${i === current ? 'aria-current="page"' : ''} aria-label="Pagina ${i}">${i}</button>`);
+  }
+  if (last < totalPages) {
+    if (last < totalPages - 1) pages.push(`<span class="bf-page-ellipsis" aria-hidden="true">…</span>`);
+    pages.push(`<button type="button" class="bf-page-number" onclick="goToPage('${sectionKey}',${totalPages})" aria-label="Pagina ${totalPages}">${totalPages}</button>`);
+  }
+  return `<div class="bf-pagination"><span class="bf-pagination-summary">${meta.total ? `${meta.start}–${meta.end} de ${meta.total} ${label}` : `0 ${label}`}</span><div class="bf-pagination-actions bf-pagination-desktop"><button type="button" class="btn small ghost" onclick="changePage('${sectionKey}',-1)" ${current <= 1 ? 'disabled' : ''}>${ic('chevLeft')} Anterior</button><span class="bf-pagination-page">Página ${current} de ${totalPages}</span><button type="button" class="btn small ghost" onclick="changePage('${sectionKey}',1)" ${current >= totalPages ? 'disabled' : ''}>Próxima ${ic('chevRight')}</button></div><nav class="bf-pagination-mobile" aria-label="Paginas de ${label}"><button type="button" class="bf-page-arrow" onclick="changePage('${sectionKey}',-1)" ${current <= 1 ? 'disabled' : ''} aria-label="Pagina anterior">${ic('chevLeft')}</button>${pages.join('')}<button type="button" class="bf-page-arrow" onclick="changePage('${sectionKey}',1)" ${current >= totalPages ? 'disabled' : ''} aria-label="Proxima pagina">${ic('chevRight')}</button></nav></div>`;
+}
+function goToPage(sectionKey, pageNumber) {
+  if (!Object.prototype.hasOwnProperty.call(pageState, sectionKey)) return;
+  pageState[sectionKey] = Math.max(1, Math.floor(pageNumber));
+  render();
+}
+function changePage(sectionKey, delta) {
+  const current = pageState[sectionKey] || 1;
+  pageState[sectionKey] = Math.max(1, current + delta);
+  render();
+}
 function applyBookingFilter() {
   bf = {
     date: $("#bfDate").value,
@@ -274,6 +325,7 @@ function applyBookingFilter() {
     name: $("#bfName").value.trim(),
     status: $("#bfStatus").value,
   };
+  pageState.bookings = 1;
   updateFilteredResults();
 }
 function liveFilter(fn, id) {
@@ -286,6 +338,7 @@ function typeFilter(fn, id) {
 }
 function applyClientFilter() {
   cf = { name: $("#cfName").value.trim(), staff: $("#cfStaff").value };
+  pageState.clients = 1;
   updateFilteredResults();
 }
 const norm = (t) =>
@@ -295,20 +348,7 @@ const norm = (t) =>
     .toLowerCase();
 function updateFilteredResults() {
   if (view !== "admin" || !["bookings", "clients"].includes(section)) return;
-  const current = document.querySelector(".main .filter-count");
-  if (!current) return;
-  const source = document.createElement("div");
-  source.innerHTML = adminContent();
-  const next = source.querySelector(".filter-count");
-  if (!next) return;
-  const currentCard = current.nextElementSibling,
-    nextCard = next.nextElementSibling;
-  current.replaceWith(next);
-  if (currentCard && nextCard) currentCard.replaceWith(nextCard);
-  const clear = document.querySelector(".main .filter-clear");
-  if (clear)
-    clear.disabled =
-      section === "bookings" ? !Object.values(bf).some(Boolean) : !(cf.name || cf.staff);
+  render();
 }
 function clearBookingFilters() {
   bf = { date: "", service: "", staff: "", name: "", status: "" };
@@ -316,6 +356,7 @@ function clearBookingFilters() {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
+  pageState.bookings = 1;
   updateFilteredResults();
 }
 function clearClientFilters() {
@@ -324,6 +365,7 @@ function clearClientFilters() {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
+  pageState.clients = 1;
   updateFilteredResults();
 }
 function newBooking() {
@@ -956,7 +998,7 @@ function calendarPage() {
       : '<div class="empty">Nenhum agendamento neste dia.</div>'
   }</aside>`;
 
-  return `${calFull ? "" : pageHead("Calendário", "Todos os agendamentos do mês, de todos os profissionais, em um só lugar.", `<button class="btn ghost" onclick="goCalToday()">Hoje</button><button class="btn primary" onclick="openBookingModal('${calDay}')">${ic("plus")} Novo agendamento</button>`)}<section class="bcal-shell ${calFull ? "bcal-full" : ""}" aria-label="Calendário de agendamentos"><div class="bcal-toolbar"><div class="bcal-nav"><button type="button" class="btn small" onclick="shiftAdminCal(-1)" aria-label="Mês anterior">${ic("chevLeft")}</button><select aria-label="Mês" onchange="setAdminCal(${y},+this.value)">${MONTHS.map((n, i) => `<option value="${i}" ${i === m - 1 ? "selected" : ""}>${n}</option>`).join("")}</select><select aria-label="Ano" onchange="setAdminCal(+this.value,${m - 1})">${years.map((v) => `<option ${v === y ? "selected" : ""}>${v}</option>`).join("")}</select><button type="button" class="btn small" onclick="shiftAdminCal(1)" aria-label="Próximo mês">${ic("chevRight")}</button>${calFull ? `<button type="button" class="btn small ghost" onclick="goCalToday()">Hoje</button>` : ""}</div><div class="bcal-legend"><span><i class="bcal-dot scheduled"></i>Confirmado</span><span><i class="bcal-dot pending"></i>Pendente</span><span><i class="bcal-dot done"></i>Concluído</span><b class="bcal-total">${monthCount} no mês</b></div><button type="button" class="btn small bcal-full-btn" onclick="toggleCalFull()" aria-pressed="${calFull}" title="${calFull ? "Sair da tela cheia" : "Maximizar calendário"}">${ic(calFull ? "minimize" : "maximize")}<span>${calFull ? "Minimizar" : "Maximizar"}</span></button></div><div class="bcal-body"><div class="bcal-main"><div class="bcal-weekdays">${WEEKDAYS.map((w) => `<span>${w}</span>`).join("")}</div><div class="bcal-grid">${cells.join("")}</div></div>${panel}</div></section>`;
+  return `${calFull ? "" : pageHead("Calendário", "Todos os agendamentos do mês, de todos os profissionais, em um só lugar.", `<button class="btn ghost bf-today-btn" onclick="goCalToday()">Hoje</button><button class="btn primary" onclick="openBookingModal('${calDay}')">${ic("plus")} Novo agendamento</button>`)}<section class="bcal-shell ${calFull ? "bcal-full" : ""}" aria-label="Calendário de agendamentos"><div class="bcal-toolbar"><div class="bcal-nav"><button type="button" class="btn small" onclick="shiftAdminCal(-1)" aria-label="Mês anterior">${ic("chevLeft")}</button><select aria-label="Mês" onchange="setAdminCal(${y},+this.value)">${MONTHS.map((n, i) => `<option value="${i}" ${i === m - 1 ? "selected" : ""}>${n}</option>`).join("")}</select><select aria-label="Ano" onchange="setAdminCal(+this.value,${m - 1})">${years.map((v) => `<option ${v === y ? "selected" : ""}>${v}</option>`).join("")}</select><button type="button" class="btn small" onclick="shiftAdminCal(1)" aria-label="Próximo mês">${ic("chevRight")}</button>${calFull ? `<button type="button" class="btn small ghost bf-today-btn" onclick="goCalToday()">Hoje</button>` : ""}</div><div class="bcal-legend"><span><i class="bcal-dot scheduled"></i>Confirmado</span><span><i class="bcal-dot pending"></i>Pendente</span><span><i class="bcal-dot done"></i>Concluído</span><b class="bcal-total">${monthCount} no mês</b></div><button type="button" class="btn small bcal-full-btn" onclick="toggleCalFull()" aria-pressed="${calFull}" title="${calFull ? "Sair da tela cheia" : "Maximizar calendário"}">${ic(calFull ? "minimize" : "maximize")}<span>${calFull ? "Minimizar" : "Maximizar"}</span></button></div><div class="bcal-body"><div class="bcal-main"><div class="bcal-weekdays">${WEEKDAYS.map((w) => `<span>${w}</span>`).join("")}</div><div class="bcal-grid">${cells.join("")}</div></div>${panel}</div></section>`;
 }
 function adminPage() {
   let menu = [
@@ -975,7 +1017,7 @@ function adminPage() {
   return `<div class="admin ${sideCollapsed ? "side-collapsed" : ""}"><button type="button" class="bf-mobile-backdrop" onclick="closeMobileMenu()" aria-label="Fechar menu"></button><aside class="sidebar" id="barber-sidebar" aria-label="Menu de gestão"><div class="side-top"><div class="side-label">PAINEL DE CONTROLE</div><button class="side-toggle" onclick="toggleSide()" aria-label="${sideCollapsed ? "Expandir menu" : "Recolher menu"}" title="${sideCollapsed ? "Expandir menu" : "Recolher menu"}">${ic(sideCollapsed ? "chevRight" : "chevLeft")}</button></div><div class="side-menu">${menu.map((m) => `<button class="side-btn ${section === m[0] ? "active" : ""}" ${section === m[0] ? 'aria-current="page"' : ""} onclick="setAdminSection('${m[0]}')" title="${m[2]}"><span class="side-ic">${ic(m[1])}</span><span class="side-txt">${m[2]}</span></button>`).join("")}</div><div class="side-foot"><button class="side-btn" onclick="toggleTheme()" title="${theme === "light" ? "Modo escuro" : "Modo claro"}"><span class="side-ic">${ic(theme === "light" ? "moon" : "sun")}</span><span class="side-txt">${theme === "light" ? "Modo escuro" : "Modo claro"}</span></button><button class="side-btn" onclick="go('public')" title="Site do cliente"><span class="side-ic">${ic("arrowRight")}</span><span class="side-txt">Site do cliente</span></button><button class="side-btn side-exit" onclick="logout()" title="Sair da gestão"><span class="side-ic">${ic("ban")}</span><span class="side-txt">Sair da gestão</span></button></div></aside><main class="main">${adminContent()}</main></div>`;
 }
 function pageHead(title, subtitle, extra = "") {
-  return `<div class="page-head"><div><div class="eyebrow">PAINEL DA BARBEARIA</div><h1>${title}</h1><span class="muted">${subtitle}</span></div><div class="head-actions ${title === "Financeiro" ? "bf-finance-actions" : ""}">${extra}</div></div>`;
+  return `<div class="page-head"><div><div class="eyebrow">PAINEL DA BARBEARIA</div><h1>${title}</h1><span class="muted">${subtitle}</span></div><div class="head-actions ${title === "Financeiro" ? "bf-finance-actions" : title === "Calendário" ? "bf-calendar-actions" : ""}">${extra}</div></div>`;
 }
 function bookingsTable(rows, action = true) {
   return `<div class="tablewrap"><table class="table"><thead><tr><th>Data / hora</th><th>Cliente</th><th>Serviço</th><th>Profissional</th><th>Valor</th><th>Status</th>${action ? "<th></th>" : ""}</tr></thead><tbody>${rows.length ? rows.map((b) => `<tr><td>${new Date(b.date + "T12:00:00").toLocaleDateString("pt-BR")}<br><b>${b.time}</b></td><td>${esc(b.customer)}</td><td>${esc(svcTotal(b.serviceIds || b.serviceId)?.name || "Serviço removido")}</td><td>${esc(staff(b.staffId)?.name || "—")}</td><td class="price">${money(svcTotal(b.serviceIds || b.serviceId)?.price)}</td><td><span class="status ${b.status}">${{ pendente: "Pendente", confirmado: "Confirmado", concluido: "Concluído", cancelado: "Cancelado" }[b.status] || esc(b.status)}</span></td>${action ? `<td><button class="btn small ghost" onclick="bookingDetails('${b.id}')">Detalhes</button></td>` : ""}</tr>`).join("") : `<tr><td colspan="7" class="empty">Nenhum agendamento encontrado.</td></tr>`}</tbody></table></div>`;
@@ -1116,7 +1158,7 @@ function adminContent() {
             )),
       0,
     );
-    return `<div class="premium-agenda">${pageHead("Agenda", "Visualize atendimentos por horário e profissional.", `<button class="btn ghost" onclick="changeAgendaDate(today)">Hoje</button><button class="btn primary" onclick="openBookingModal()">${ic("plus")} Novo agendamento</button>`)}
+    return `<div class="premium-agenda">${pageHead("Agenda", "Visualize atendimentos por horário e profissional.", `<button class="btn ghost bf-today-btn" onclick="changeAgendaDate(today)">Hoje</button><button class="btn primary" onclick="openBookingModal()">${ic("plus")} Novo agendamento</button>`)}
  <div class="agenda-controls"><div class="day-nav"><button class="btn small" onclick="changeAgendaDate(addDays(date,-1))">${ic("chevLeft")}</button><input type="date" value="${date}" aria-label="Selecionar data" onchange="if(this.value)changeAgendaDate(this.value)"><select aria-label="Mês" onchange="changeAgendaDate(setYM(date,null,+this.value))">${MONTHS.map((m, i) => `<option value="${i}" ${+date.slice(5, 7) - 1 === i ? "selected" : ""}>${m}</option>`).join("")}</select><select aria-label="Ano" onchange="changeAgendaDate(setYM(date,+this.value,null))">${(() => {
    const y = +today.slice(0, 4),
      c = +date.slice(0, 4);
@@ -1161,6 +1203,7 @@ function adminContent() {
         )
         .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
       let active = Object.values(bf).some(Boolean);
+      const paged = paginate(rows, "bookings");
       return `<form class="card filter-bar" onsubmit="event.preventDefault();applyBookingFilter()"><label>Data<input type="date" id="bfDate" onchange="applyBookingFilter()" value="${bf.date}"></label><label>Serviço<select id="bfService" onchange="applyBookingFilter()"><option value="">Todos</option>${db.services.map((x) => `<option value="${x.id}" ${bf.service === x.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></label><label>Profissional<select id="bfStaff" onchange="applyBookingFilter()"><option value="">Todos</option>${db.staff.map((x) => `<option value="${x.id}" ${bf.staff === x.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></label><label>Status<select id="bfStatus" onchange="applyBookingFilter()"><option value="">Todos</option>${[
         ["pendente", "Pendente"],
         ["confirmado", "Confirmado"],
@@ -1170,7 +1213,7 @@ function adminContent() {
         .map(([v, l]) => `<option value="${v}" ${bf.status === v ? "selected" : ""}>${l}</option>`)
         .join(
           "",
-        )}</select></label><label>Cliente<input id="bfName" oninput="typeFilter(applyBookingFilter,'bfName')" placeholder="Nome do cliente" value="${esc(bf.name)}"></label><div class="filter-actions"><button class="btn filter-clear" type="button" ${active ? "" : "disabled"} onclick="clearBookingFilters()">Limpar</button></div></form><p class="muted filter-count">${rows.length} agendamento(s) encontrado(s)${active ? " com os filtros aplicados" : ""}.</p><div class="card">${bookingsTable(rows)}</div>`;
+        )}</select></label><label>Cliente<input id="bfName" oninput="typeFilter(applyBookingFilter,'bfName')" placeholder="Nome do cliente" value="${esc(bf.name)}"></label><div class="filter-actions"><button class="btn filter-clear" type="button" ${active ? "" : "disabled"} onclick="clearBookingFilters()">Limpar</button></div></form><p class="muted filter-count">${rows.length} agendamento(s) encontrado(s)${active ? " com os filtros aplicados" : ""}.</p><div class="card">${bookingsTable(paged.items)}${pagination("bookings", paged, "agendamentos")}</div>`;
     })()}`;
   }
   if (section === "clients") {
@@ -1195,7 +1238,8 @@ function adminContent() {
             .includes(cf.name.replace(/\D/g, "") || "#"),
       )
       .sort((a, b) => a.name.localeCompare(b.name));
-    return `${pageHead("Clientes", "Histórico e relacionamento com seus clientes.")}<form class="card filter-bar" onsubmit="event.preventDefault();applyClientFilter()"><label>Cliente<input id="cfName" oninput="typeFilter(applyClientFilter,'cfName')" placeholder="Nome ou telefone" value="${esc(cf.name)}"></label><label>Atendido por<select id="cfStaff" onchange="applyClientFilter()"><option value="">Todos</option>${db.staff.map((x) => `<option value="${x.id}" ${cf.staff === x.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></label><div class="filter-actions"><button class="btn filter-clear" type="button" ${cf.name || cf.staff ? "" : "disabled"} onclick="clearClientFilters()">Limpar</button></div></form><p class="muted filter-count">${list.length} cliente(s) encontrado(s).</p><div class="card"><div class="tablewrap"><table class="table"><tr><th>Nome</th><th>Telefone</th><th>Agendamentos</th><th>Total pago</th><th>Última visita marcada</th></tr>${list.length ? "" : '<tr><td colspan="5" class="empty">Nenhum cliente encontrado.</td></tr>'}${list.map((c) => `<tr><td>${esc(c.name)}</td><td>${esc(c.phone)}</td><td>${c.count}</td><td>${money(c.spent)}</td><td>${pretty(c.last)}</td></tr>`).join("")}</table></div></div>`;
+    const paged = paginate(list, "clients");
+    return `${pageHead("Clientes", "Histórico e relacionamento com seus clientes.")}<form class="card filter-bar bf-client-filter" onsubmit="event.preventDefault();applyClientFilter()"><label>Cliente<input id="cfName" oninput="typeFilter(applyClientFilter,'cfName')" placeholder="Nome ou telefone" value="${esc(cf.name)}"></label><label>Atendido por<select id="cfStaff" onchange="applyClientFilter()"><option value="">Todos</option>${db.staff.map((x) => `<option value="${x.id}" ${cf.staff === x.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></label><div class="filter-actions"><button class="btn filter-clear" type="button" ${cf.name || cf.staff ? "" : "disabled"} onclick="clearClientFilters()">Limpar</button></div></form><p class="muted filter-count">${list.length} cliente(s) encontrado(s).</p><div class="card"><div class="tablewrap"><table class="table"><tr><th>Nome</th><th>Telefone</th><th>Agendamentos</th><th>Total pago</th><th>Última visita marcada</th></tr>${paged.items.length ? "" : '<tr><td colspan="5" class="empty">Nenhum cliente encontrado.</td></tr>'}${paged.items.map((c) => `<tr><td>${esc(c.name)}</td><td>${esc(c.phone)}</td><td>${c.count}</td><td>${money(c.spent)}</td><td>${pretty(c.last)}</td></tr>`).join("")}</table></div>${pagination("clients", paged, "clientes")}</div>`;
   }
   if (section === "finance") {
     let paid = db.bookings.filter((b) => b.paid),
@@ -1220,22 +1264,32 @@ function adminContent() {
         : '<div class="empty">Nenhum pagamento registrado. Marque um atendimento como pago na agenda ou nos detalhes.</div>'
     }</div></div>`;
   }
-  if (section === "services")
-    return `${pageHead("Serviços", "Edite o catálogo que aparece imediatamente no site público.", `<button class="btn primary" onclick="editService()">+ Adicionar serviço</button>`)}<div class="card">${db.services.map((s) => `<div class="manage-row"><div><strong>${svcIcon(s)} ${esc(s.name)}</strong><p>${s.duration} min • ${money(s.price)} • ${s.active ? "Visível no site" : "Oculto no site"}</p></div><button class="btn small" onclick="editService('${s.id}')">Editar</button></div>`).join("")}</div>`;
+  if (section === "services") {
+    const paged = paginate(db.services, "services");
+    return `${pageHead("Serviços", "Edite o catálogo que aparece imediatamente no site público.", `<button class="btn primary" onclick="editService()">+ Adicionar serviço</button>`)}<div class="card bf-service-list">${paged.items.map((s) => `<div class="manage-row bf-service-row"><div class="bf-service-details"><strong>${svcIcon(s)} ${esc(s.name)}</strong><p>${s.duration} min • ${money(s.price)} • ${s.active ? "Visível no site" : "Oculto no site"}</p></div><button class="btn small bf-service-edit" onclick="editService('${s.id}')">Editar</button></div>`).join("")}${pagination("services", paged, "serviços")}</div>`;
+  }
   if (section === "hours") return hoursPage();
-  if (section === "staff")
-    return `${pageHead("Profissionais", "Cadastre profissionais e o horário padrão. Ajuste cada dia em Horários da semana.", `<button class="btn primary" onclick="editStaff()">+ Novo profissional</button>`)}<div class="card">${db.staff.map((p) => `<div class="manage-row"><div style="display:flex;align-items:center;gap:12px">${avatarOf(p)}<div><strong>${esc(p.name)}</strong><p>${esc(p.role)} • ${p.start}–${p.end} • ${p.active ? "Ativo" : "Inativo"}</p><p>Dias: ${p.days.map((i) => ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"][i]).join(", ")}</p></div></div><button class="btn small" onclick="editStaff('${p.id}')">Editar</button></div>`).join("")}</div>`;
-  if (section === "notices")
-    return `${pageHead("Avisos e bloqueios", "Comunique indisponibilidades e impeça reservas quando necessário.", `<button class="btn primary" onclick="editNotice()">+ Criar aviso</button>`)}<div class="card"><p class="muted">Avisos informativos aparecem na seleção da data. Bloqueios também removem os horários disponíveis do profissional ou de toda a equipe.</p>${db.notices
-      .slice()
-      .sort((a, b) => a.date.localeCompare(b.date))
+  if (section === "staff") {
+    const paged = paginate(db.staff, "staff");
+    return `${pageHead("Profissionais", "Cadastre profissionais e o horário padrão. Ajuste cada dia em Horários da semana.", `<button class="btn primary" onclick="editStaff()">+ Novo profissional</button>`)}<div class="card bf-staff-list">${paged.items
+      .map((p) => {
+        const days = p.days.map((i) => ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"][i]).join(", ");
+        return `<div class="manage-row bf-staff-row"><div class="bf-staff-main"><div class="bf-staff-content">${avatarOf(p)}<div class="bf-staff-details"><div class="bf-staff-name-line"><strong>${esc(p.name)}</strong><span class="bf-staff-badge ${p.active ? "is-active" : "is-inactive"}">${p.active ? "Ativo" : "Inativo"}</span></div><p class="bf-staff-role">${esc(p.role)}</p><div class="bf-staff-inline-meta"><span class="bf-staff-hours">${ic("clock")} ${p.start}–${p.end}</span></div></div></div><p class="bf-staff-days">Dias: ${days}</p></div><div class="bf-staff-actions"><button class="btn small ghost bf-staff-edit" onclick="editStaff('${p.id}')" title="Editar ${esc(p.name)}" aria-label="Editar ${esc(p.name)}"><span class="bf-action-icon" aria-hidden="true">${ic("pencil")}</span><span class="bf-action-label">Editar</span></button><button class="btn small danger bf-staff-remove" ${isOwnerStaff(p) ? 'disabled title="O cadastro do dono não pode ser removido"' : `title="Remover ${esc(p.name)}" onclick="removeStaff('${p.id}')"`} aria-label="${isOwnerStaff(p) ? "Não é possível remover o proprietário" : `Remover ${esc(p.name)}`}"><span class="bf-action-icon" aria-hidden="true">${ic("trash")}</span><span class="bf-action-label">Excluir</span></button></div></div>`;
+      })
+      .join("")}${pagination("staff", paged, "profissionais")}</div>`;
+  }
+  if (section === "notices") {
+    const orderedNotices = db.notices.slice().sort((a, b) => a.date.localeCompare(b.date));
+    const paged = paginate(orderedNotices, "notices");
+    return `${pageHead("Avisos e bloqueios", "Comunique indisponibilidades e impeça reservas quando necessário.", `<button class="btn primary" onclick="editNotice()">+ Criar aviso</button>`)}<div class="card"><p class="muted">Avisos informativos aparecem na seleção da data. Bloqueios também removem os horários disponíveis do profissional ou de toda a equipe.</p>${paged.items
       .map(
         (n) =>
           `<div class="notice-row"><div><strong>${esc(n.title)}</strong><p>${pretty(n.date)} • ${n.type === "block" ? "Bloqueia agenda" : "Somente informa"} • ${n.staffId === "all" ? "Todos os profissionais" : esc(staff(n.staffId)?.name)}</p><p>${esc(n.detail)}</p></div><div style="display:flex;gap:7px"><button class="btn small" onclick="editNotice('${n.id}')">Editar</button><button class="btn small danger" onclick="removeNotice('${n.id}')">Excluir</button></div></div>`,
       )
-      .join("")}</div>`;
+      .join("")}${pagination("notices", paged, "avisos")}</div>`;
+  }
   if (section === "settings")
-    return `${pageHead("Configurações", "Personalize informações exibidas no site da barbearia.")}<div class="card" style="max-width:680px"><div class="forms"><label>Nome comercial<input id="setName" value="${esc(db.shop.name)}"></label><label>Frase do destaque<input id="setTag" value="${esc(db.shop.tagline)}"></label><label>WhatsApp da barbearia<input id="setPhone" value="${esc(db.shop.whatsapp)}" placeholder="5579999999999"></label><label>Telefone (opcional)<input id="setPhoneAlt" value="${esc(db.shop.phone || "")}" placeholder="(79) 3000-0000" inputmode="tel"></label><fieldset class="set-social"><legend>Redes sociais (opcional)</legend><label>Instagram<input id="setInstagram" value="${esc(db.shop.instagram || "")}" placeholder="@suabarbearia ou link do perfil"></label><label>Facebook<input id="setFacebook" value="${esc(db.shop.facebook || "")}" placeholder="link da página ou nome da página"></label><small class="muted">Só aparecem no site as redes preenchidas. O WhatsApp usa o número acima.</small></fieldset><label>Descrição / endereço<textarea id="setAddress" rows="3">${esc(db.shop.address)}</textarea></label><button class="btn primary" onclick="saveSettings()">Salvar alterações</button></div></div>`;
+    return `${pageHead("Configurações", "Personalize informações exibidas no site da barbearia.")}<div class="card bf-settings-card"><div class="forms bf-settings-form"><label>Nome comercial<input id="setName" value="${esc(db.shop.name)}"></label><label>Frase do destaque<input id="setTag" value="${esc(db.shop.tagline)}"></label><label>WhatsApp da barbearia<input id="setPhone" value="${esc(db.shop.whatsapp)}" placeholder="5579999999999"></label><label>Telefone (opcional)<input id="setPhoneAlt" value="${esc(db.shop.phone || "")}" placeholder="(79) 3000-0000" inputmode="tel"></label><fieldset class="set-social bf-settings-social"><legend>Redes sociais (opcional)</legend><label>Instagram<input id="setInstagram" value="${esc(db.shop.instagram || "")}" placeholder="@suabarbearia ou link do perfil"></label><label>Facebook<input id="setFacebook" value="${esc(db.shop.facebook || "")}" placeholder="link da página ou nome da página"></label><small class="muted">Só aparecem no site as redes preenchidas. O WhatsApp usa o número acima.</small></fieldset><label class="bf-settings-address">Descrição / endereço<textarea id="setAddress" rows="3">${esc(db.shop.address)}</textarea></label><button class="btn primary bf-settings-save" onclick="saveSettings()">Salvar alterações</button></div></div>`;
   return "";
 }
 window.__barberRemount = (v) => {
@@ -1368,6 +1422,10 @@ function toast(t) {
     )
   )
     message = "Ocorreu um erro no sistema. Tente novamente em instantes.";
+  // No mobile, notificacoes informativas causam sobreposicao e piscadas.
+  // Alertas de erro continuam visiveis para nao ocultar falhas importantes.
+  const isErrorToast = /(erro|falha|não foi possível|inválid|indispon|reservado|expirou|sem conexão|ocorreu um erro|não pode|não é possível|cancele ou transfira|confira)/i.test(message);
+  if (window.matchMedia("(max-width: 760px)").matches && !isErrorToast) return;
   if (window.__barberReactToast) {
     window.dispatchEvent(
       new CustomEvent("barber:toast", {
@@ -1427,14 +1485,18 @@ function setYM(d, y, m) {
   return `${Y}-${String(M + 1).padStart(2, "0")}-${String(D).padStart(2, "0")}`;
 }
 const isOwnerStaff = (p) => !!p && (p.owner || p.id === "p1");
-function removeStaff(id) {
+function removeStaff(id, confirmed = false) {
   const p = staff(id);
   if (!p || isOwnerStaff(p)) return toast("O cadastro do dono não pode ser removido.");
   if (activeBookings().some((b) => b.staffId === id && b.date >= today))
     return toast(
       "Este profissional tem agendamentos futuros. Cancele ou transfira antes de remover.",
     );
-  if (!confirm(`Remover ${p.name}?`)) return;
+  if (!confirmed)
+    return modal(
+      "Remover profissional",
+      `<div class="bf-confirm-delete"><div class="bf-confirm-delete-icon">${ic("trash", "ic-lg")}</div><p><strong>${esc(p.name)}</strong> será removido da equipe.</p><p class="muted">Essa ação apaga o cadastro do profissional desta lista. Se quiser continuar, confirme abaixo.</p><div class="form-actions bf-confirm-delete-actions"><button type="button" class="btn ghost" onclick="closeModal()">Cancelar</button><button type="button" class="btn danger" onclick="removeStaff('${id}', true)">${ic("trash")} Confirmar exclusão</button></div></div>`,
+    );
   db.staff = db.staff.filter((x) => x.id !== id);
   save();
   closeModal();
@@ -1473,7 +1535,7 @@ function editStaff(id) {
   };
   modal(
     id ? "Editar profissional" : "Novo profissional",
-    `<form class="forms" onsubmit="event.preventDefault();saveStaff('${id || ""}')"><div class="photo-field"><div id="staffPhotoPreview">${avatarOf(p)}</div><div><strong>Foto do profissional</strong><p class="muted">Opcional. Sem foto, aparece a inicial do nome.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn small" style="display:inline-flex;cursor:pointer">${ic("camera")} Escolher foto<input type="file" accept="image/*" hidden onchange="pickStaffPhoto(this)"></label><button type="button" class="btn small ghost" onclick="staffPhotoDraft='';$('#staffPhotoPreview').innerHTML=avatarOf({name:$('#fName').value||'?'})">${ic("trash")} Remover</button></div></div></div><label>Nome<input id="fName" required value="${esc(p.name)}"></label><label>Função<input id="fRole" value="${esc(p.role)}"></label><div class="form-row"><label>Início do expediente<input type="time" id="fStart" value="${p.start}"></label><label>Fim do expediente<input type="time" id="fEnd" value="${p.end}"></label></div><strong>Dias de atendimento</strong><div style="display:flex;gap:12px;flex-wrap:wrap">${["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((d, i) => `<label class="toggle"><input type="checkbox" class="weekday" value="${i}" ${p.days.includes(i) ? "checked" : ""}>${d}</label>`).join("")}</div><label class="toggle"><input id="fActive" type="checkbox" ${p.active ? "checked" : ""}> Profissional ativo</label><div class="form-actions"><button class="btn primary" type="submit">Salvar profissional</button>${id ? (isOwnerStaff(p) ? `<button type="button" class="btn danger" disabled title="Cadastro do dono não pode ser removido">${ic("trash")} Remover (dono)</button>` : `<button type="button" class="btn danger" onclick="removeStaff('${id}')">${ic("trash")} Remover profissional</button>`) : ""}</div></form>`,
+    `<form class="forms bf-staff-editor" onsubmit="event.preventDefault();saveStaff('${id || ""}')"><div class="photo-field bf-staff-photo-field"><div class="bf-staff-photo-copy"><strong>Foto do profissional</strong><p class="muted">Opcional. Sem foto, aparece a inicial do nome.</p></div><div class="bf-staff-photo-body"><div id="staffPhotoPreview" class="bf-staff-photo-preview">${avatarOf(p)}</div><div class="bf-staff-photo-actions"><label class="btn small bf-photo-action" style="cursor:pointer">${ic("camera")} <span>Escolher foto</span><input type="file" accept="image/*" hidden onchange="pickStaffPhoto(this)"></label><button type="button" class="btn small ghost bf-photo-action" onclick="staffPhotoDraft='';$('#staffPhotoPreview').innerHTML=avatarOf({name:$('#fName').value||'?'})">${ic("trash")} <span>Remover foto</span></button></div></div></div><div class="bf-staff-editor-grid"><label>Nome<input id="fName" required value="${esc(p.name)}"></label><label>Função<input id="fRole" value="${esc(p.role)}"></label></div><div class="form-row"><label>Início do expediente<input type="time" id="fStart" value="${p.start}"></label><label>Fim do expediente<input type="time" id="fEnd" value="${p.end}"></label></div><div class="bf-staff-days-block"><strong>Dias de atendimento</strong><div class="bf-staff-days-checks">${["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((d, i) => `<label class="toggle"><input type="checkbox" class="weekday" value="${i}" ${p.days.includes(i) ? "checked" : ""}>${d}</label>`).join("")}</div></div><label class="toggle bf-staff-active-toggle"><input id="fActive" type="checkbox" ${p.active ? "checked" : ""}> Profissional ativo</label><div class="form-actions bf-staff-editor-actions"><button class="btn primary" type="submit">Salvar profissional</button></div></form>`,
   );
 }
 function saveStaff(id) {
@@ -1800,6 +1862,8 @@ for (const name of [
   "editService",
   "saveService",
   "editStaff",
+  "changePage",
+  "goToPage",
   "saveStaff",
   "updateWeek",
   "editNotice",

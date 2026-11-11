@@ -5234,3 +5234,1405 @@ body.bf-cal-lock {
     bottom: 0 !important;
   }
 }
+
+/* ===============================================================
+   BarberFlow | ajustes exclusivos para telas pequenas (<= 760px)
+   Financeiro, Serviços, Profissionais e foto do profissional.
+   Nenhuma alteração visual é aplicada ao desktop.
+   =============================================================== */
+.bf-mobile-icon,
+.bf-staff-remove {
+  display: none;
+}
+.bf-staff-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.bf-staff-main,
+.bf-staff-details {
+  min-width: 0;
+}
+.bf-staff-role,
+.bf-staff-days {
+  overflow-wrap: break-word;
+}
+.bf-staff-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.bf-staff-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+.bf-staff-badge.is-active {
+  background: #1d3b2b;
+  color: #81dca9;
+}
+.bf-staff-badge.is-inactive {
+  background: #42272b;
+  color: #f9a1a6;
+}
+.bf-staff-hours {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.bf-staff-hours .ic {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+.bf-action-icon {
+  display: none;
+}
+.bf-staff-photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.bf-staff-photo-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.bf-staff-photo-copy strong {
+  display: block;
+}
+.bf-staff-photo-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.bf-photo-action span {
+  min-width: 0;
+}
+.bf-confirm-delete {
+  text-align: center;
+}
+.bf-confirm-delete-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 14px;
+  background: #2d2022;
+  color: #ff9d9d;
+  border: 1px solid #713b3b;
+}
+.bf-confirm-delete > p {
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+.bf-confirm-delete-actions {
+  justify-content: center;
+}
+
+@media (max-width: 760px) {
+  /* Financeiro: não comprimir legendas longas em duas colunas. */
+  .admin .bf-finance-actions {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100%;
+    gap: 9px;
+  }
+  .admin .bf-finance-actions > .btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    padding: 11px 14px;
+    font-size: 12px;
+    line-height: 1.35;
+    white-space: normal;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 9px;
+  }
+  .admin .bf-finance-actions > .btn .ic {
+    flex: 0 0 auto;
+  }
+
+  /* Serviços: ampliar área de texto e evitar botões esmagados. */
+  .admin .bf-service-list,
+  .admin .bf-staff-list {
+    padding: 12px;
+    min-width: 0;
+  }
+  .admin .bf-service-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 9px;
+    padding: 14px 12px;
+    min-width: 0;
+  }
+  .admin .bf-service-row:last-child,
+  .admin .bf-staff-row:last-child {
+    margin-bottom: 0;
+  }
+  .admin .bf-service-details {
+    min-width: 0;
+  }
+  .admin .bf-service-details strong {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    line-height: 1.4;
+  }
+  .admin .bf-service-details strong .ic {
+    flex: 0 0 auto;
+  }
+  .admin .bf-service-details p {
+    margin: 5px 0 0;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+  }
+  .admin .bf-service-edit {
+    min-height: 40px;
+    padding: 9px 11px;
+    white-space: nowrap;
+  }
+
+  /* Profissionais: cartões mais limpos, com ações em linha. */
+  .admin .bf-staff-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 13px;
+    min-width: 0;
+    margin-bottom: 10px;
+    border-radius: 16px;
+  }
+  .admin .bf-staff-main {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+  }
+  .admin .bf-staff-content {
+    gap: 12px;
+    min-width: 0;
+    align-items: center;
+  }
+  .admin .bf-staff-content > .avatar,
+  .admin .bf-staff-content > .avatar-img {
+    flex: 0 0 60px;
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    object-fit: cover;
+  }
+  .admin .bf-staff-details strong {
+    display: block;
+    line-height: 1.3;
+    font-size: 14px;
+    overflow-wrap: break-word;
+  }
+  .admin .bf-staff-role {
+    margin: 4px 0 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: #6d6e73;
+  }
+  .admin .bf-staff-meta {
+    gap: 7px;
+  }
+  .admin .bf-staff-days {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #6d6e73;
+  }
+  .admin .bf-staff-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+  .admin .bf-staff-actions > .btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40px;
+    width: 100%;
+    min-width: 0;
+    padding: 8px 10px;
+    border-radius: 11px;
+    gap: 7px;
+    font-size: 11px;
+  }
+  .admin .bf-staff-actions .bf-action-icon,
+  .admin .bf-staff-actions .bf-staff-remove {
+    display: inline-flex;
+  }
+  .admin .bf-staff-actions .bf-action-icon .ic,
+  .admin .bf-staff-actions > .btn .ic {
+    width: 15px;
+    height: 15px;
+    flex: 0 0 auto;
+  }
+  .admin .bf-staff-actions .bf-action-label {
+    line-height: 1;
+  }
+  .admin .bf-staff-actions .bf-staff-remove:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+  }
+
+  /* Modal do profissional: topo vertical, foto maior e botões alinhados. */
+  .modal .bf-staff-photo-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 14px;
+    min-width: 0;
+    border-radius: 14px;
+  }
+  .modal .bf-staff-photo-copy {
+    min-width: 0;
+  }
+  .modal .bf-staff-photo-copy > strong {
+    display: block;
+    line-height: 1.35;
+  }
+  .modal .bf-staff-photo-copy p {
+    margin: 5px 0 0;
+    line-height: 1.45;
+  }
+  .modal .bf-staff-photo-body {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+  .modal .bf-staff-photo-preview {
+    width: 96px;
+    min-width: 96px;
+  }
+  .modal .bf-staff-photo-preview .avatar,
+  .modal .bf-staff-photo-preview .avatar-img {
+    width: 96px;
+    height: 96px;
+    max-width: 100%;
+    object-fit: cover;
+    border-radius: 16px;
+    font-size: 32px;
+  }
+  .modal .bf-staff-photo-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 9px;
+    width: 100%;
+  }
+  .modal .bf-staff-photo-actions > .btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 9px 12px;
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.25;
+    white-space: normal;
+    gap: 7px;
+    justify-content: center;
+  }
+  .modal .bf-staff-photo-actions > .btn .ic {
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+  }
+}
+@media (max-width: 420px) {
+  /* Em telefones estreitos, a foto sobe e os controles ficam mais arejados. */
+  .admin .bf-staff-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .modal .bf-staff-photo-body {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 12px;
+  }
+  .modal .bf-staff-photo-preview,
+  .modal .bf-staff-photo-preview .avatar,
+  .modal .bf-staff-photo-preview .avatar-img {
+    width: 88px;
+    height: 88px;
+    min-width: 0;
+  }
+  .modal .bf-staff-photo-actions {
+    width: 100%;
+    gap: 8px;
+  }
+  .modal .bf-staff-photo-actions > .btn {
+    min-height: 40px;
+    font-size: 11px;
+  }
+  .bf-confirm-delete-actions {
+    flex-direction: column;
+  }
+  .bf-confirm-delete-actions .btn {
+    width: 100%;
+  }
+}
+
+/* ===============================================================
+   BarberFlow | refinamentos mobile v3 e contraste no tema claro
+   Preserva Financeiro, Serviços e demais componentes aprovados.
+   =============================================================== */
+
+/* Confirmação de exclusão: dimensões explícitas para não herdar o
+   flex-grow dos botões de formulário (inclusive no modo claro). */
+.modal .bf-confirm-delete {
+  max-width: 100%;
+}
+.modal .bf-confirm-delete-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+  width: 100%;
+}
+.modal .bf-confirm-delete-actions > .btn {
+  flex: 0 1 auto;
+  width: auto;
+  height: 42px;
+  min-height: 42px;
+  max-height: 42px;
+  padding: 0 15px;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  border-radius: 10px;
+}
+.modal .bf-confirm-delete-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+}
+
+/* Tema claro: métricas da agenda legíveis, com cartões claros e
+   numeração escura (em vez do fundo escuro com texto escuro). */
+body.theme-light .schedule-metrics > div {
+  background: #f8f3e8;
+  border: 1px solid #e7d9bd;
+  box-shadow: none;
+}
+body.theme-light .schedule-metrics strong,
+body.theme-light .schedule-metrics strong small {
+  color: #624719;
+}
+body.theme-light .schedule-metrics span {
+  color: #675d4e;
+}
+body.theme-light .schedule-help p {
+  color: #5f594e;
+}
+body.theme-light .schedule-help p b {
+  color: #29231c;
+}
+body.theme-light .schedule-key {
+  color: #5e574e;
+}
+
+/* Visão geral no modo claro: ícones dourados com fundo dourado suave.
+   O ícone verde dos concluídos mantém sua identidade sem escurecer. */
+body.theme-light .premium-overview .ov-kpi .kpi-icon:not(.green) {
+  background: #f7e8c5;
+  color: #91631f;
+  border: 1px solid #ead3a1;
+}
+body.theme-light .premium-overview .ov-kpi .kpi-icon.green {
+  background: #e3f3e9;
+  color: #267749;
+  border: 1px solid #c4e5d0;
+}
+body.theme-light .premium-overview .ov-kpi .kpi-icon .ic {
+  color: inherit;
+}
+
+@media (max-width: 760px) {
+  /* Botão separado dos textos e ocupando toda a largura do cartão. */
+  .schedule-help > .btn {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    margin-top: 18px;
+    padding: 10px 14px;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    text-align: center;
+    white-space: normal;
+  }
+  .schedule-help > .btn .ic {
+    flex: 0 0 auto;
+  }
+  .schedule-help p:last-of-type {
+    margin-bottom: 0;
+  }
+  /* Pop-up compacto, sem botões altos ou áreas vazias. */
+  .modal:has(.bf-confirm-delete) {
+    width: min(100%, 390px);
+    padding: 20px;
+  }
+  .modal:has(.bf-confirm-delete) .modal-head h2 {
+    margin-bottom: 12px;
+    font-size: 16px;
+  }
+  .modal .bf-confirm-delete-actions > .btn {
+    min-width: 0;
+    flex: 1 1 0;
+    font-size: 10px;
+    padding: 0 8px;
+  }
+}
+@media (max-width: 360px) {
+  .modal .bf-confirm-delete-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .modal .bf-confirm-delete-actions > .btn {
+    flex: 0 0 42px;
+    width: 100%;
+  }
+}
+
+/* ===============================================================
+   BarberFlow v4 - melhorias pontuais de responsividade e contraste
+   =============================================================== */
+/* Botao Hoje: contraste proprio nos temas claro e escuro, em todas as telas. */
+.admin .bf-today-btn,
+.admin .btn.ghost.bf-today-btn {
+  background: #3d3020;
+  border: 1px solid #ad8344;
+  color: #f3cb86;
+  font-weight: 800;
+  opacity: 1;
+}
+.admin .bf-today-btn:hover:not(:disabled),
+.admin .btn.ghost.bf-today-btn:hover:not(:disabled) {
+  background: #574127;
+  border-color: #d6ac62;
+  color: #fff2d6;
+}
+body.theme-light .admin .bf-today-btn,
+body.theme-light .admin .btn.ghost.bf-today-btn {
+  background: #f3e3c6;
+  border-color: #c69a54;
+  color: #744713;
+}
+body.theme-light .admin .bf-today-btn:hover:not(:disabled),
+body.theme-light .admin .btn.ghost.bf-today-btn:hover:not(:disabled) {
+  background: #e9cf9d;
+  border-color: #b58338;
+  color: #51330c;
+}
+
+@media (max-width: 760px) {
+  /* O selo de status fica junto ao canto superior direito do card. */
+  .admin .bf-staff-row {
+    position: relative;
+  }
+  .admin .bf-staff-content {
+    padding-right: 73px;
+  }
+  .admin .bf-staff-meta .bf-staff-badge {
+    position: absolute;
+    top: 15px;
+    right: 13px;
+    max-width: 74px;
+    z-index: 1;
+  }
+  .admin .bf-staff-meta {
+    min-height: 20px;
+  }
+  /* Apenas o filtro da tela Clientes ocupa a linha inteira. */
+  .admin .bf-client-filter > .filter-actions {
+    grid-column: 1 / -1;
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+  .admin .bf-client-filter > .filter-actions > .filter-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+  }
+}
+
+/* ================================================================
+   BarberFlow V5 | Desktop: ajustes isolados, mobile aprovado intacto
+   ================================================================ */
+
+/* Configurações: sem limite estreito; responsivo sem afetar o mobile. */
+.admin .bf-settings-card {
+  width: 100%;
+  max-width: 1120px;
+}
+.admin .bf-settings-form {
+  min-width: 0;
+}
+.admin .bf-settings-form > label,
+.admin .bf-settings-social {
+  min-width: 0;
+}
+
+@media (min-width: 761px) {
+  /* Profissionais: foto/nome, situação e dias lado a lado.
+     A distribuição mobile permanece inalterada. */
+  .admin .bf-staff-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 24px;
+    row-gap: 8px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
+  }
+  .admin .bf-staff-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(135px, 0.7fr) minmax(165px, 0.9fr);
+    align-items: center;
+    gap: 14px 22px;
+    min-width: 0;
+  }
+  .admin .bf-staff-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+  .admin .bf-staff-content > .avatar,
+  .admin .bf-staff-content > .avatar-img {
+    width: 58px;
+    height: 58px;
+    flex: 0 0 58px;
+    border-radius: 13px;
+    object-fit: cover;
+  }
+  .admin .bf-staff-details strong {
+    display: block;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .admin .bf-staff-role {
+    margin: 4px 0 0;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .admin .bf-staff-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+  .admin .bf-staff-days {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .admin .bf-staff-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .admin .bf-staff-actions .bf-staff-edit {
+    min-height: 40px;
+    padding: 9px 16px;
+    white-space: nowrap;
+  }
+  .admin .bf-staff-actions .bf-action-icon {
+    display: none;
+  }
+  .admin .bf-staff-actions .bf-staff-remove {
+    display: none;
+  }
+
+  /* Modal de edição: cabeçalho de foto com texto e ações proporcionais. */
+  .modal .bf-staff-photo-field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr);
+    gap: 15px;
+    align-items: center;
+    padding: 14px;
+    min-width: 0;
+  }
+  .modal .bf-staff-photo-copy {
+    min-width: 0;
+  }
+  .modal .bf-staff-photo-copy strong {
+    font-size: 13px;
+  }
+  .modal .bf-staff-photo-copy p {
+    margin: 6px 0 0;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .modal .bf-staff-photo-body {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    min-width: 0;
+  }
+  .modal .bf-staff-photo-preview {
+    width: 76px;
+    min-width: 76px;
+  }
+  .modal .bf-staff-photo-preview .avatar,
+  .modal .bf-staff-photo-preview .avatar-img {
+    width: 76px;
+    height: 76px;
+    border-radius: 12px;
+    object-fit: cover;
+  }
+  .modal .bf-staff-photo-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px;
+  }
+  .modal .bf-staff-photo-actions > .btn {
+    min-width: 0;
+    width: 100%;
+    min-height: 36px;
+    padding: 8px 7px;
+    justify-content: center;
+    gap: 5px;
+    font-size: 10px;
+    white-space: normal;
+    line-height: 1.3;
+  }
+  .modal .bf-staff-photo-actions .ic {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
+  }
+
+  /* Como funciona: botão compacto na coluna lateral do desktop. */
+  .schedule-help > .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: auto;
+    max-width: 100%;
+    min-height: 38px;
+    margin-top: 10px;
+    padding: 8px 10px;
+    white-space: normal;
+    text-align: center;
+    font-size: 10px;
+    line-height: 1.3;
+    letter-spacing: 0;
+  }
+  .schedule-help > .btn .ic {
+    width: 13px;
+    height: 13px;
+    flex: 0 0 auto;
+  }
+
+  /* Calendário: dois botões equilibrados no cabeçalho desktop. */
+  .admin .bf-calendar-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: min(100%, 375px);
+  }
+  .admin .bf-calendar-actions > .btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 9px 12px;
+    justify-content: center;
+    text-align: center;
+    gap: 7px;
+    white-space: normal;
+    line-height: 1.25;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1180px) {
+  /* A sidebar reduz a área útil; evita esmagar os três blocos. */
+  .admin .bf-staff-main {
+    grid-template-columns: minmax(0, 1fr) minmax(130px, auto);
+    gap: 7px 12px;
+  }
+  .admin .bf-staff-days {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin .bf-settings-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 18px 20px;
+  }
+  .admin .bf-settings-social,
+  .admin .bf-settings-address,
+  .admin .bf-settings-save {
+    grid-column: 1 / -1;
+  }
+  .admin .bf-settings-social {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 18px;
+    min-width: 0;
+  }
+  .admin .bf-settings-social > small {
+    grid-column: 1 / -1;
+  }
+  .admin .bf-settings-save {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 760px) {
+  /* Única intervenção no mobile: equilíbrio dos botões do Calendário
+     explicitamente solicitado no último print. */
+  .admin .bf-calendar-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 9px;
+  }
+  .admin .bf-calendar-actions > .btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 8px;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.3;
+  }
+}
+
+/* ================================================================
+   BarberFlow V6 | Profissionais, modal e paginação
+   ================================================================ */
+
+.bf-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(205, 186, 150, 0.18);
+}
+.bf-pagination-summary {
+  font-size: 12px;
+  color: var(--muted);
+}
+.bf-pagination-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.bf-pagination-page {
+  min-width: 108px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.bf-staff-name-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.bf-staff-inline-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.modal .modal-head .btn.small.ghost {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-color: rgba(212, 190, 145, 0.42);
+  color: #f3ede3;
+}
+.modal .modal-head .btn.small.ghost .ic {
+  width: 18px;
+  height: 18px;
+}
+body.theme-light .modal .modal-head .btn.small.ghost {
+  color: #2f2821;
+  border-color: #d6c4a2;
+}
+
+.modal:has(.bf-staff-editor) {
+  width: min(100%, 760px);
+  padding: 26px;
+}
+.modal:has(.bf-staff-editor) .modal-head {
+  margin-bottom: 18px;
+}
+.modal:has(.bf-staff-editor) .modal-head h2 {
+  margin: 0;
+  font-size: 28px;
+}
+.modal .bf-staff-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.modal .bf-staff-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.modal .bf-staff-photo-field {
+  display: grid;
+  grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+  padding: 18px;
+  border-radius: 18px;
+}
+.modal .bf-staff-photo-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.modal .bf-staff-photo-copy strong {
+  font-size: 16px;
+  line-height: 1.35;
+}
+.modal .bf-staff-photo-copy p {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.modal .bf-staff-photo-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.modal .bf-staff-photo-preview {
+  width: 150px;
+  max-width: 100%;
+}
+.modal .bf-staff-photo-preview .avatar,
+.modal .bf-staff-photo-preview .avatar-img {
+  width: 150px;
+  height: 150px;
+  border-radius: 20px;
+  object-fit: cover;
+}
+.modal .bf-staff-photo-actions {
+  width: 100%;
+  display: grid;
+  gap: 10px;
+}
+.modal .bf-staff-photo-actions > .btn {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+.modal .bf-staff-days-block strong {
+  display: block;
+  margin-bottom: 10px;
+}
+.modal .bf-staff-days-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+.modal .bf-staff-active-toggle {
+  margin-top: -2px;
+}
+.modal .bf-staff-editor-actions {
+  justify-content: flex-start;
+}
+.modal .bf-staff-editor-actions .btn {
+  width: 100%;
+  min-height: 46px;
+}
+
+.modal:has(.bf-confirm-delete) {
+  width: min(100%, 500px);
+  padding: 24px;
+}
+.modal:has(.bf-confirm-delete) .modal-head {
+  margin-bottom: 10px;
+}
+.modal:has(.bf-confirm-delete) .modal-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.modal .bf-confirm-delete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+.modal .bf-confirm-delete > p {
+  max-width: 380px;
+  margin: 0;
+}
+.modal .bf-confirm-delete-icon {
+  width: 58px;
+  height: 58px;
+  margin: 0;
+}
+.modal .bf-confirm-delete-actions {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+.modal .bf-confirm-delete-actions > .btn {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  min-height: 44px;
+  justify-content: center;
+  padding: 0 12px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+@media (min-width: 761px) {
+  .admin .bf-staff-list {
+    padding: 18px;
+  }
+  .admin .bf-staff-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+    padding: 18px 20px;
+    border-radius: 18px;
+  }
+  .admin .bf-staff-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    min-width: 0;
+  }
+  .admin .bf-staff-content {
+    align-items: center;
+    gap: 16px;
+  }
+  .admin .bf-staff-content > .avatar,
+  .admin .bf-staff-content > .avatar-img {
+    width: 68px;
+    height: 68px;
+    flex: 0 0 68px;
+    border-radius: 16px;
+  }
+  .admin .bf-staff-details strong {
+    font-size: 18px;
+    line-height: 1.25;
+  }
+  .admin .bf-staff-role {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .admin .bf-staff-days {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .admin .bf-staff-meta {
+    display: contents;
+  }
+  .admin .bf-staff-badge {
+    position: static;
+    max-width: none;
+  }
+  .admin .bf-staff-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .admin .bf-staff-actions > .btn {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    border-radius: 12px;
+    justify-content: center;
+  }
+  .admin .bf-staff-actions .bf-action-icon,
+  .admin .bf-staff-actions .bf-staff-remove {
+    display: inline-flex;
+  }
+  .admin .bf-staff-actions .bf-action-icon .ic,
+  .admin .bf-staff-actions > .btn .ic {
+    width: 18px;
+    height: 18px;
+  }
+  .admin .bf-staff-actions .bf-action-label {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .admin .bf-staff-row {
+    position: relative;
+  }
+  .admin .bf-staff-name-line {
+    padding-right: 78px;
+  }
+  .admin .bf-staff-name-line .bf-staff-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    max-width: 74px;
+    z-index: 1;
+  }
+  .bf-pagination {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .bf-pagination-actions {
+    justify-content: stretch;
+  }
+  .bf-pagination-actions > .btn {
+    flex: 1 1 0;
+  }
+  .bf-pagination-page {
+    width: 100%;
+  }
+  .modal:has(.bf-staff-editor) {
+    width: min(100%, 420px);
+    padding: 20px;
+  }
+  .modal:has(.bf-staff-editor) .modal-head h2 {
+    font-size: 16px;
+  }
+  .modal .bf-staff-editor-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .modal .bf-staff-photo-field {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    padding: 14px;
+  }
+  .modal .bf-staff-photo-body {
+    align-items: center;
+  }
+  .modal .bf-staff-photo-preview,
+  .modal .bf-staff-photo-preview .avatar,
+  .modal .bf-staff-photo-preview .avatar-img {
+    width: 102px;
+    height: 102px;
+  }
+  .modal .bf-confirm-delete-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .modal .bf-confirm-delete-actions > .btn {
+    white-space: normal;
+    height: auto;
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+}
+
+/* BarberFlow V7: paginação mobile compacta e acoes desktop lado a lado. */
+.bf-pagination-mobile {
+  display: none;
+}
+@media (min-width: 761px) {
+  .admin .bf-staff-row .bf-staff-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 9px;
+  }
+}
+@media (max-width: 760px) {
+  .bf-pagination {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .bf-pagination-actions.bf-pagination-desktop {
+    display: none;
+  }
+  .bf-pagination-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: clamp(3px, 1.3vw, 7px);
+    width: 100%;
+    min-width: 0;
+  }
+  .bf-pagination-mobile .bf-page-number,
+  .bf-pagination-mobile .bf-page-arrow,
+  .bf-pagination-mobile .bf-page-ellipsis {
+    display: inline-flex;
+    flex: 0 1 auto;
+    align-items: center;
+    justify-content: center;
+    width: clamp(25px, 8.2vw, 34px);
+    height: clamp(30px, 8.7vw, 36px);
+    min-width: 0;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--panel2);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .bf-pagination-mobile .bf-page-ellipsis {
+    background: transparent;
+    border-color: transparent;
+    cursor: default;
+    font-size: 17px;
+  }
+  .bf-pagination-mobile .bf-page-number.is-current {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #221a0d;
+  }
+  .bf-pagination-mobile .bf-page-arrow {
+    background: transparent;
+    border-color: transparent;
+    color: var(--gold2);
+  }
+  .bf-pagination-mobile .bf-page-arrow .ic {
+    width: 17px;
+    height: 17px;
+  }
+  .bf-pagination-mobile button:disabled {
+    opacity: 0.28;
+    cursor: not-allowed;
+  }
+  body.theme-light .bf-pagination-mobile .bf-page-number {
+    background: #fff;
+    border-color: #ded2bf;
+    color: #4b3c28;
+  }
+  body.theme-light .bf-pagination-mobile .bf-page-number.is-current {
+    background: #b9862e;
+    border-color: #b9862e;
+    color: #fff;
+  }
+  body.theme-light .bf-pagination-mobile .bf-page-arrow {
+    color: #9b6b21;
+    background: transparent;
+    border-color: transparent;
+  }
+  body.theme-light .bf-pagination-mobile .bf-page-ellipsis {
+    background: transparent;
+    border-color: transparent;
+  }
+}
+
+/* ==============================================================
+   BarberFlow | Polimento de movimento - mantendo o layout aprovado
+   Apenas efeitos visuais: sem mudanças em medidas, cores ou fluxos.
+   ============================================================= */
+:root {
+  --bf-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --bf-motion-soft: 260ms;
+}
+
+/* Abertura do overlay e do diálogo, sem redimensionar o formulário. */
+@keyframes bf-overlay-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes bf-dialog-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+.modal-bg {
+  animation: bf-overlay-enter 220ms ease-out both;
+}
+.modal-bg > .modal {
+  animation: bf-dialog-enter 340ms var(--bf-motion-ease) both;
+  transform-origin: center;
+}
+
+/* Microinterações suaves, sem alterar a posição dos controles. */
+.admin .bf-staff-row,
+.admin .bf-service-row,
+.admin .notice-row,
+.premium-overview .ov-kpi,
+.premium-overview .ov-panel,
+.schedule-day,
+.schedule-person,
+.bcal-day,
+.bcal-event,
+.bcal-item,
+.next-booking,
+.bf-pagination-mobile .bf-page-number,
+.bf-pagination-mobile .bf-page-arrow {
+  transition:
+    background-color var(--bf-motion-soft) ease,
+    border-color var(--bf-motion-soft) ease,
+    box-shadow 320ms ease,
+    transform 320ms var(--bf-motion-ease);
+}
+
+/* Indicadores, switches e filtros: mudanças contínuas, sem flashes. */
+.bf-staff-badge,
+.status,
+.chip,
+.schedule-day-icon,
+.bcal-count,
+.bcal-day-num,
+.schedule-mode button,
+.switch-track,
+.switch-track::before,
+.filter-clear {
+  transition:
+    background-color 240ms ease,
+    color 240ms ease,
+    border-color 240ms ease,
+    box-shadow 280ms ease,
+    transform 280ms var(--bf-motion-ease),
+    opacity 200ms ease;
+}
+
+/* Foco dos campos com destaque gradual, sem modificar dimensões. */
+.forms input,
+.forms textarea,
+.forms select,
+.filter-bar input,
+.filter-bar select,
+.bf-settings-form input,
+.bf-settings-form textarea {
+  transition:
+    border-color 240ms ease,
+    box-shadow 240ms ease,
+    background-color 240ms ease;
+}
+
+/* Somente em dispositivos com mouse: nenhum movimento involuntário no toque. */
+@media (hover: hover) and (pointer: fine) {
+  .admin .bf-staff-row:hover,
+  .admin .bf-service-row:hover,
+  .admin .notice-row:hover {
+    transform: translate3d(0, -2px, 0);
+    box-shadow: 0 9px 24px rgba(0, 0, 0, 0.09);
+  }
+  .premium-overview .ov-kpi:hover,
+  .premium-overview .ov-panel:hover,
+  .schedule-person:hover {
+    transform: translate3d(0, -2px, 0);
+  }
+  .bcal-event:hover,
+  .bcal-item:hover,
+  .next-booking:hover {
+    transform: translate3d(0, -1px, 0);
+  }
+  .bf-pagination-mobile button:not(:disabled):hover {
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
+/* Respeita acessibilidade e evita movimento para quem desativa animações. */
+@media (prefers-reduced-motion: reduce) {
+  .modal-bg,
+  .modal-bg > .modal {
+    animation: none !important;
+  }
+  .admin .bf-staff-row,
+  .admin .bf-service-row,
+  .admin .notice-row,
+  .premium-overview .ov-kpi,
+  .premium-overview .ov-panel,
+  .schedule-day,
+  .schedule-person,
+  .bcal-day,
+  .bcal-event,
+  .bcal-item,
+  .next-booking,
+  .bf-pagination-mobile .bf-page-number,
+  .bf-pagination-mobile .bf-page-arrow,
+  .bf-staff-badge,
+  .status,
+  .chip,
+  .schedule-day-icon,
+  .bcal-count,
+  .bcal-day-num,
+  .schedule-mode button,
+  .switch-track,
+  .switch-track::before,
+  .filter-clear,
+  .forms input,
+  .forms textarea,
+  .forms select,
+  .filter-bar input,
+  .filter-bar select,
+  .bf-settings-form input,
+  .bf-settings-form textarea {
+    transition: none !important;
+  }
+}
+
+html {
+  scrollbar-gutter: stable;
+}
