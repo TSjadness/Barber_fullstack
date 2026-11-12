@@ -780,11 +780,11 @@ async function confirmBooking() {
   let customer = flow.customer.trim(),
     phone = flow.phone.trim();
   if (bookingSubmitting) return;
-  if (!validClientName(customer)) return toast("Informe nome e sobrenome (somente letras).");
+  if (!validClientName(customer)) return toast("Informe nome e sobrenome (somente letras).", true);
   if (!/^\d{10,11}$/.test(phone.replace(/\D/g, "")))
-    return toast("Informe um WhatsApp válido com DDD.");
+    return toast("Informe um WhatsApp válido com DDD.", true);
   if (!openSlots(flow.date, flow.confirmStaff, flow.serviceIds).includes(flow.time))
-    return toast("Este horário ficou indisponível. Escolha outro.");
+    return toast("Este horário ficou indisponível. Escolha outro.", true);
   bookingSubmitting = true;
   const startedAt = Date.now();
   $("#overlay").innerHTML =
@@ -813,11 +813,11 @@ async function confirmBooking() {
     closeModal();
     console.error("[BarberFlow] Falha na confirmação:", e);
     if (e.network || e.status >= 500 || !e.message) {
-      toast("Não foi possível confirmar o agendamento. Confira sua conexão e tente novamente.");
+      toast("Não foi possível confirmar o agendamento. Confira sua conexão e tente novamente.", true);
     } else if (e.status === 409) {
       // Outra pessoa reservou o horário primeiro: mostra o motivo, atualiza a disponibilidade
       // e volta para a escolha de horário mantendo nome e WhatsApp já preenchidos.
-      toast(e.message + " Escolha outro horário.");
+      toast(e.message + " Escolha outro horário.", true);
       flow.time = null;
       step = 3;
       try {
@@ -825,7 +825,7 @@ async function confirmBooking() {
       } catch {}
       render();
     } else {
-      toast(e.message);
+      toast(e.message, true);
     }
   } finally {
     bookingSubmitting = false;
@@ -1414,7 +1414,7 @@ function render() {
 let renderedScreen = null,
   renderedStep = null,
   renderedSection = null;
-function toast(t) {
+function toast(t, forceVisible = false) {
   let message = String(t || "");
   if (
     /(?:is not defined|undefined|null|TypeError|ReferenceError|SyntaxError|Error:|stack|SQLITE_|internal server error|fetch failed)/i.test(
@@ -1425,7 +1425,7 @@ function toast(t) {
   // No mobile, notificacoes informativas causam sobreposicao e piscadas.
   // Alertas de erro continuam visiveis para nao ocultar falhas importantes.
   const isErrorToast = /(erro|falha|não foi possível|inválid|indispon|reservado|expirou|sem conexão|ocorreu um erro|não pode|não é possível|cancele ou transfira|confira)/i.test(message);
-  if (window.matchMedia("(max-width: 760px)").matches && !isErrorToast) return;
+  if (window.matchMedia("(max-width: 760px)").matches && !isErrorToast && !forceVisible) return;
   if (window.__barberReactToast) {
     window.dispatchEvent(
       new CustomEvent("barber:toast", {
@@ -1468,7 +1468,9 @@ function saveService(id) {
     duration: +$("#fDuration").value,
     price: +$("#fPrice").value,
     icon: $("#fIcon").value || "scissors",
-    active: $("#fActive").checked,
+    active: window.matchMedia("(min-width: 761px)").matches
+      ? $("#fStatus").value === "active"
+      : $("#fActive").checked,
   };
   if (!data.name || data.duration < 10) return toast("Confira os dados do serviço.");
   if (id) Object.assign(service(id), data);
@@ -1535,7 +1537,7 @@ function editStaff(id) {
   };
   modal(
     id ? "Editar profissional" : "Novo profissional",
-    `<form class="forms bf-staff-editor" onsubmit="event.preventDefault();saveStaff('${id || ""}')"><div class="photo-field bf-staff-photo-field"><div class="bf-staff-photo-copy"><strong>Foto do profissional</strong><p class="muted">Opcional. Sem foto, aparece a inicial do nome.</p></div><div class="bf-staff-photo-body"><div id="staffPhotoPreview" class="bf-staff-photo-preview">${avatarOf(p)}</div><div class="bf-staff-photo-actions"><label class="btn small bf-photo-action" style="cursor:pointer">${ic("camera")} <span>Escolher foto</span><input type="file" accept="image/*" hidden onchange="pickStaffPhoto(this)"></label><button type="button" class="btn small ghost bf-photo-action" onclick="staffPhotoDraft='';$('#staffPhotoPreview').innerHTML=avatarOf({name:$('#fName').value||'?'})">${ic("trash")} <span>Remover foto</span></button></div></div></div><div class="bf-staff-editor-grid"><label>Nome<input id="fName" required value="${esc(p.name)}"></label><label>Função<input id="fRole" value="${esc(p.role)}"></label></div><div class="form-row"><label>Início do expediente<input type="time" id="fStart" value="${p.start}"></label><label>Fim do expediente<input type="time" id="fEnd" value="${p.end}"></label></div><div class="bf-staff-days-block"><strong>Dias de atendimento</strong><div class="bf-staff-days-checks">${["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((d, i) => `<label class="toggle"><input type="checkbox" class="weekday" value="${i}" ${p.days.includes(i) ? "checked" : ""}>${d}</label>`).join("")}</div></div><label class="toggle bf-staff-active-toggle"><input id="fActive" type="checkbox" ${p.active ? "checked" : ""}> Profissional ativo</label><div class="form-actions bf-staff-editor-actions"><button class="btn primary" type="submit">Salvar profissional</button></div></form>`,
+    `<form class="forms bf-staff-editor" onsubmit="event.preventDefault();saveStaff('${id || ""}')"><div class="photo-field bf-staff-photo-field"><div class="bf-staff-photo-copy"><strong>Foto do profissional</strong><p class="muted">Opcional. Sem foto, aparece a inicial do nome.</p></div><div class="bf-staff-photo-body"><div id="staffPhotoPreview" class="bf-staff-photo-preview">${avatarOf(p)}</div><div class="bf-staff-photo-actions"><label class="btn small bf-photo-action" style="cursor:pointer">${ic("camera")} <span>Escolher foto</span><input type="file" accept="image/*" hidden onchange="pickStaffPhoto(this)"></label><button type="button" class="btn small ghost bf-photo-action" onclick="staffPhotoDraft='';$('#staffPhotoPreview').innerHTML=avatarOf({name:$('#fName').value||'?'})">${ic("trash")} <span>Remover foto</span></button></div></div></div><div class="bf-staff-editor-grid"><label>Nome<input id="fName" required value="${esc(p.name)}"></label><label>Função<input id="fRole" value="${esc(p.role)}"></label></div><div class="form-row"><label>Início do expediente<input type="time" id="fStart" value="${p.start}"></label><label>Fim do expediente<input type="time" id="fEnd" value="${p.end}"></label></div><div class="bf-staff-days-block"><div class="bf-staff-days-heading"><span class="bf-staff-days-symbol" aria-hidden="true">${ic("calendar")}</span><div><strong>Dias de atendimento</strong><p>Selecione os dias em que o profissional atende.</p></div></div><div class="bf-staff-days-checks">${["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((d, i) => `<label class="toggle bf-staff-day-option"><input type="checkbox" class="weekday" value="${i}" ${p.days.includes(i) ? "checked" : ""}>${d}</label>`).join("")}</div></div><label class="toggle bf-staff-active-toggle"><input id="fActive" type="checkbox" ${p.active ? "checked" : ""}> Profissional ativo</label><label class="bf-staff-status-select">Status do profissional<select id="fStatus"><option value="active" ${p.active ? "selected" : ""}>Ativo</option><option value="inactive" ${p.active ? "" : "selected"}>Desativado</option></select></label><div class="form-actions bf-staff-editor-actions"><button class="btn ghost bf-staff-editor-cancel" type="button" onclick="closeModal()">Cancelar</button><button class="btn primary" type="submit">${ic("check")} Salvar profissional</button></div></form>`,
   );
 }
 function saveStaff(id) {

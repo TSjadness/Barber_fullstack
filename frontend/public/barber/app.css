@@ -6633,6 +6633,206 @@ body.theme-light .modal .modal-head .btn.small.ghost {
   }
 }
 
+/* Correcao pontual: evita deslocamento horizontal ao alternar telas
+   com e sem rolagem vertical, preservando o scroll do navegador. */
 html {
   scrollbar-gutter: stable;
+}
+
+/* ==============================================================
+   BarberFlow | modal Profissionais - proposta desktop aprovada
+   Regra isolada: não modifica o layout mobile existente.
+   ============================================================== */
+.bf-staff-status-select {
+  display: none;
+}
+.bf-staff-editor-cancel {
+  display: none;
+}
+.bf-staff-days-heading > p,
+.bf-staff-days-heading p {
+  display: none;
+}
+.bf-staff-days-symbol {
+  display: none;
+}
+
+@media (min-width: 761px) {
+  .modal .bf-staff-photo-field {
+    display: grid;
+    grid-template-columns: minmax(180px, 225px) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: stretch;
+    column-gap: 24px;
+    row-gap: 18px;
+    padding: 22px;
+    border-radius: 18px;
+  }
+  /* O preview ocupa a coluna inteira; conteúdo e ações ficam à direita. */
+  .modal .bf-staff-photo-body {
+    display: contents;
+  }
+  .modal .bf-staff-photo-preview {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    align-self: stretch;
+    width: 100%;
+    min-width: 0;
+    min-height: 220px;
+    aspect-ratio: 1;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .modal .bf-staff-photo-preview .avatar,
+  .modal .bf-staff-photo-preview .avatar-img {
+    width: 100%;
+    height: 100%;
+    min-height: 220px;
+    max-width: none;
+    border-radius: 20px;
+    object-fit: cover;
+    font-size: 56px;
+  }
+  .modal .bf-staff-photo-copy {
+    grid-column: 2;
+    grid-row: 1;
+    justify-content: flex-end;
+    align-self: end;
+    padding-top: 14px;
+  }
+  .modal .bf-staff-photo-copy strong {
+    font-size: 17px;
+  }
+  .modal .bf-staff-photo-copy p {
+    margin: 7px 0 0;
+    font-size: 12.5px;
+  }
+  .modal .bf-staff-photo-actions {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    width: 100%;
+  }
+  .modal .bf-staff-photo-actions > .btn {
+    min-height: 44px;
+  }
+
+  .modal .bf-staff-days-block {
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--panel2) 38%, var(--panel));
+  }
+  .modal .bf-staff-days-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .modal .bf-staff-days-heading strong {
+    margin: 0 0 4px;
+    font-size: 15px;
+  }
+  .modal .bf-staff-days-heading p {
+    display: block;
+    color: var(--muted);
+    margin: 0;
+    font-size: 12px;
+    font-weight: 400;
+  }
+  .modal .bf-staff-days-symbol {
+    display: inline-flex;
+    color: var(--gold);
+    padding-top: 2px;
+  }
+  .modal .bf-staff-days-symbol .ic {
+    width: 22px;
+    height: 22px;
+  }
+  .modal .bf-staff-days-checks {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 7px;
+  }
+  .modal .bf-staff-days-checks .bf-staff-day-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 0;
+    min-height: 42px;
+    padding: 8px 3px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 700;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .modal .bf-staff-days-checks .bf-staff-day-option:has(input:checked) {
+    background: color-mix(in srgb, var(--gold) 17%, var(--panel));
+    border-color: color-mix(in srgb, var(--gold) 35%, var(--line));
+  }
+  .modal .bf-staff-days-checks input {
+    flex: 0 0 16px;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--gold);
+  }
+  .modal .bf-staff-active-toggle {
+    display: none;
+  }
+  .modal .bf-staff-status-select {
+    display: grid;
+    gap: 8px;
+    width: 100%;
+    font-size: 14px;
+  }
+  .modal .bf-staff-status-select select {
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 14px;
+  }
+  .modal .bf-staff-editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+  .modal .bf-staff-editor-actions > .btn {
+    flex: 0 1 auto;
+    width: auto;
+    min-height: 46px;
+    padding: 12px 18px;
+  }
+  .modal .bf-staff-editor-actions > .btn.primary {
+    flex: 0 0 245px;
+  }
+  .modal .bf-staff-editor-actions .bf-staff-editor-cancel {
+    display: inline-flex;
+  }
+}
+
+/* Desktop estreito: os dias podem ocupar duas linhas sem esmagar labels. */
+@media (min-width: 761px) and (max-width: 900px) {
+  .modal .bf-staff-days-checks {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Garante que o seletor desktop não apareça no formulário mobile. */
+@media (max-width: 760px) {
+  .modal .bf-staff-editor .bf-staff-status-select {
+    display: none;
+  }
+  .modal .bf-staff-editor-actions .bf-staff-editor-cancel {
+    display: none;
+  }
 }
