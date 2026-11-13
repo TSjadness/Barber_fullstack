@@ -7,6 +7,18 @@ export function shopNow(now=new Date()){
  const p=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(now).map(x=>[x.type,x.value]));
  return {date:`${p.year}-${p.month}-${p.day}`, minutes:Number(p.hour)*60+Number(p.minute)};
 }
+// Limites do site público (mesma regra de frontend/src/lib/barber-rules.ts).
+export const PHONE_BOOKING_LIMIT=2, IP_BOOKING_LIMIT=5, IP_LIMIT_WINDOW_MS=3600_000;
+export const PHONE_LIMIT_MESSAGE='Você já tem 2 agendamentos ativos com este WhatsApp. Para marcar outro horário, fale com a barbearia.';
+export const IP_LIMIT_MESSAGE='Muitas reservas feitas desta conexão na última hora. Tente novamente mais tarde ou fale com a barbearia.';
+export class LimitError extends RuleError{}
+export const phoneKey=v=>{const d=String(v??'').replace(/\D/g,'');return d.length>=12&&d.startsWith('55')?d.slice(2):d;};
+/** Reserva pública: no máximo 2 reservas ativas (pendente/confirmado) futuras por WhatsApp. */
+export function checkPhoneLimit(phone,bookings,now=shopNow()){
+ const key=phoneKey(phone);if(!key)return;
+ const active=bookings.filter(b=>(b.status==='pendente'||b.status==='confirmado')&&phoneKey(b.phone)===key&&(b.date>now.date||(b.date===now.date&&mins(b.time)>=now.minutes))).length;
+ if(active>=PHONE_BOOKING_LIMIT)throw new LimitError(PHONE_LIMIT_MESSAGE);
+}
 export function checkSlot(b,s,now=shopNow()){
  const ids=idsOf(b), staff=s.staff.find(p=>p.id===b.staffId&&p.active);
  if(!staff||!ids.length||ids.length>6||new Set(ids).size!==ids.length||!ids.every(id=>s.services.some(x=>x.id===id&&x.active)))fail('Serviço ou profissional indisponível.');

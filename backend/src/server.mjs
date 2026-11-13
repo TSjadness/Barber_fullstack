@@ -3,7 +3,11 @@ import http from 'node:http';
 import {randomUUID,randomInt} from 'node:crypto';
 import {db,seed,state,saveState,addBooking,checkPassword,hashPassword,digest,ConflictError} from './database/db.mjs';
 const CONFLICT='Os dados foram alterados em outra aba ou aparelho. A tela foi atualizada: confira e refaça a alteração.';
-import {checkSlot,validateState,prepareAdminSave,RuleError} from './rules.mjs';
+import {checkSlot,checkPhoneLimit,validateState,prepareAdminSave,RuleError,LimitError,IP_BOOKING_LIMIT,IP_LIMIT_WINDOW_MS,IP_LIMIT_MESSAGE} from './rules.mjs';
+/** Limite por IP do servidor local: reservas criadas por conexão na última hora (em memória). */
+const bookingsByIp=new Map();
+export const resetBookingLimits=()=>bookingsByIp.clear();
+const recentByIp=ip=>{const since=Date.now()-IP_LIMIT_WINDOW_MS,list=(bookingsByIp.get(ip)||[]).filter(t=>t>since);bookingsByIp.set(ip,list);return list;};
 if(process.env.NODE_ENV==='production')throw Error('Backend mock não deve ser utilizado em produção.');
 seed();
 const HOST='127.0.0.1', PORT=Number(process.env.MOCK_PORT||3333);
@@ -71,8 +75,10 @@ export const server=http.createServer(async(req,res)=>{
    const b={id:randomUUID(),date:String(body.date||''),time:String(body.time||''),customer:String(body.customer||'').trim(),phone:String(body.phone||'').replace(/\D/g,''),serviceId:String(ids?.[0]||body.serviceId||''),staffId:String(body.staffId||''),status:'confirmado',paid:false,paymentMethod:null};
    if(ids?.length)b.serviceIds=ids;
    if(b.customer.length<3||b.customer.length>100||b.phone.length<10||b.phone.length>15)return fail(res,400,'Nome ou telefone inválido.');
-   try{db.exec('BEGIN IMMEDIATE');checkSlot(b,state());addBooking(b);db.exec('COMMIT');return respond(res,201,{booking:b});}
-   catch(e){db.exec('ROLLBACK');if(e instanceof RuleError)return fail(res,409,e.message);throw e;}
+   const ip=req.socket.remoteAddress||'local';
+   if(recentByIp(ip).length>=IP_BOOKING_LIMIT)return fail(res,403,IP_LIMIT_MESSAGE);
+   try{db.exec('BEGIN IMMEDIATE');const s=state();checkPhoneLimit(b.phone,s.bookings);checkSlot(b,s);addBooking(b);db.exec('COMMIT');recentByIp(ip).push(Date.now());return respond(res,201,{booking:b});}
+   catch(e){db.exec('ROLLBACK');if(e instanceof LimitError)return fail(res,403,e.message);if(e instanceof RuleError)return fail(res,409,e.message);throw e;}
   }
   if(path.startsWith('/admin/')){
    const user=loggedUser(req);if(!user||user.role!=='owner')return fail(res,401,'Acesso restrito ao proprietário.');

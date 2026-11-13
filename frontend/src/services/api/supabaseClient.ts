@@ -76,8 +76,11 @@ export async function supabaseRequest(route: ApiRoute, options: ApiRequest = {})
         return unwrap(saved, saved?.["conflict"] ? 409 : 400);
       }
       return getAdminState();
-    case "/bookings":
-      return unwrap((await createBooking({ data: body })) as Json, 409);
+    case "/bookings": {
+      // Limite de reservas (telefone/IP) → 403: não é conflito de horário nem falha passageira.
+      const result = (await createBooking({ data: body })) as Json;
+      return unwrap(result, result["limit"] ? 403 : 409);
+    }
     case "/login":
       return login(body);
     case "/forgot":

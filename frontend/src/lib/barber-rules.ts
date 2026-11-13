@@ -55,6 +55,41 @@ export function shopNow(now = new Date()) {
   };
 }
 
+/** Limite do site público: reservas ativas futuras por WhatsApp. */
+export const PHONE_BOOKING_LIMIT = 2;
+/** Limite do site público: reservas feitas por conexão (IP) a cada hora. */
+export const IP_BOOKING_LIMIT = 5;
+export const IP_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+export const PHONE_LIMIT_MESSAGE =
+  "Você já tem 2 agendamentos ativos com este WhatsApp. Para marcar outro horário, fale com a barbearia.";
+export const IP_LIMIT_MESSAGE =
+  "Muitas reservas feitas desta conexão na última hora. Tente novamente mais tarde ou fale com a barbearia.";
+
+/** Recusa por limite de reservas (o site mostra a mensagem sem voltar à escolha de horário). */
+export class LimitError extends RuleError {}
+
+/** Telefone só com dígitos e sem o código do país (55), para comparar reservas. */
+export function phoneKey(value: unknown) {
+  const d = String(value ?? "").replace(/\D/g, "");
+  return d.length >= 12 && d.startsWith("55") ? d.slice(2) : d;
+}
+
+/**
+ * Reserva pública: no máximo PHONE_BOOKING_LIMIT reservas ativas (pendente/confirmado)
+ * ainda por acontecer com o mesmo WhatsApp. Reservas feitas pela gestão não passam aqui.
+ */
+export function checkPhoneLimit(phone: string, bookings: Booking[], now = shopNow()) {
+  const key = phoneKey(phone);
+  if (!key) return;
+  const active = bookings.filter(
+    (b) =>
+      (b.status === "pendente" || b.status === "confirmado") &&
+      phoneKey(b["phone"]) === key &&
+      (b.date > now.date || (b.date === now.date && mins(b.time) >= now.minutes)),
+  ).length;
+  if (active >= PHONE_BOOKING_LIMIT) throw new LimitError(PHONE_LIMIT_MESSAGE);
+}
+
 /** Service ids of a booking (supports multi-service bookings). */
 export const idsOf = (b: Pick<Booking, "serviceId" | "serviceIds">) =>
   Array.isArray(b.serviceIds) && b.serviceIds.length ? b.serviceIds : [b.serviceId];

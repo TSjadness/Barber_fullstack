@@ -1,7 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeader, getRequestIP } from "@tanstack/react-start/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
+  IP_BOOKING_LIMIT,
+  IP_LIMIT_MESSAGE,
+  IP_LIMIT_WINDOW_MS,
+  LimitError,
   RuleError,
+  checkPhoneLimit,
   checkSlot,
   prepareAdminSave,
   validateState,
@@ -65,6 +72,60 @@ export const getPublicState = createServerFn({ method: "GET" }).handler(async ()
   };
 });
 
+/**
+ * Identificador da conexão para o limite por IP: HMAC do IP com a chave do servidor, para
+ * não guardar o IP em texto. Na Vercel o IP vem de `x-real-ip`/`x-forwarded-for`,
+ * preenchidos pela própria plataforma.
+ */
+async function clientKey(): Promise<string | null> {
+  const ip = (getRequestHeader("x-real-ip") || getRequestIP({ xForwardedFor: true }) || "")
+    .split(",")[0]!
+    .trim();
+  const secret = process.env["SUPABASE_SERVICE_ROLE_KEY"];
+  if (!ip || !secret) return null;
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = new Uint8Array(await crypto.subtle.sign("HMAC", key, enc.encode(ip)));
+  return Array.from(sig, (x) => x.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * Limite por IP (tabela `booking_rate_limits`, só acessível pelo servidor). Se a tabela
+ * ainda não existir (migração 0002 pendente), o limite é ignorado e a reserva segue.
+ */
+// A tabela não está nos tipos gerados do Supabase; o cliente sem tipos aceita o nome dela.
+const limitsDb = async () => (await admin()) as unknown as SupabaseClient;
+const rateLimits = {
+  async exceeded(ipKey: string) {
+    const since = new Date(Date.now() - IP_LIMIT_WINDOW_MS).toISOString();
+    const { count, error } = await (
+      await limitsDb()
+    )
+      .from("booking_rate_limits")
+      .select("id", { count: "exact", head: true })
+      .eq("ip_hash", ipKey)
+      .gte("created_at", since);
+    if (error) {
+      console.warn("[BarberFlow] Limite por IP indisponível:", error.message);
+      return false;
+    }
+    return (count ?? 0) >= IP_BOOKING_LIMIT;
+  },
+  async record(ipKey: string) {
+    const sb = await limitsDb();
+    const old = new Date(Date.now() - IP_LIMIT_WINDOW_MS).toISOString();
+    await sb.from("booking_rate_limits").delete().lt("created_at", old);
+    const { error } = await sb.from("booking_rate_limits").insert({ ip_hash: ipKey });
+    if (error) console.warn("[BarberFlow] Limite por IP não registrado:", error.message);
+  },
+};
+
 export const createBooking = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d as Record<string, any>)
   .handler(async ({ data: body }) => {
@@ -89,14 +150,21 @@ export const createBooking = createServerFn({ method: "POST" })
       ph = b["phone"] as string;
     if (c.length < 3 || c.length > 100 || ph.length < 10 || ph.length > 15)
       return { error: "Nome ou telefone inválido." };
+    const ipKey = await clientKey();
+    if (ipKey && (await rateLimits.exceeded(ipKey)))
+      return { error: IP_LIMIT_MESSAGE, limit: true };
     try {
-      checkSlot(b, await loadAll());
+      const db = await loadAll();
+      checkPhoneLimit(ph, db.bookings);
+      checkSlot(b, db);
     } catch (e) {
+      if (e instanceof LimitError) return { error: e.message, limit: true };
       if (e instanceof RuleError) return { error: e.message };
       throw e;
     }
     const { error } = await (await admin()).from("bookings").insert(rowOf(b));
     if (error) return { error: "Não foi possível salvar o agendamento." };
+    if (ipKey) await rateLimits.record(ipKey);
     return { booking: b };
   });
 
