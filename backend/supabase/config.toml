@@ -1,1 +1,4 @@
 project_id = "ekvfummfreviebcoviyg"
+[auth]
+# Sem cadastro público: a conta do dono já existe e novas contas só pelo painel.
+enable_signup = false

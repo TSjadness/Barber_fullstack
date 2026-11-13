@@ -100,16 +100,6 @@ export const createBooking = createServerFn({ method: "POST" })
     return { booking: b };
   });
 
-export const ownerExists = createServerFn({ method: "GET" }).handler(async () => {
-  const { count } = await (
-    await admin()
-  )
-    .from("user_roles")
-    .select("id", { count: "exact", head: true })
-    .eq("role", "owner");
-  return { exists: (count ?? 0) > 0 };
-});
-
 async function assertOwner(ctx: { supabase: any; userId: string }) {
   const { data } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "owner" });
   if (!data) throw new Error("Acesso restrito ao proprietário.");

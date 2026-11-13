@@ -7,7 +7,6 @@ vi.mock("@/lib/barber.functions", () => ({
   createBooking: vi.fn(),
   getAdminState: vi.fn(),
   getPublicState: vi.fn(),
-  ownerExists: vi.fn(),
 }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth: {} } }));
 

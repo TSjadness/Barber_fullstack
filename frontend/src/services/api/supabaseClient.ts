@@ -5,7 +5,6 @@ import {
   createBooking,
   getAdminState,
   getPublicState,
-  ownerExists,
   saveAdminState,
 } from "@/lib/barber.functions";
 
@@ -28,23 +27,9 @@ const email = (body: Json) => field(body, "email").trim().toLowerCase();
 async function login(body: Json) {
   const address = email(body);
   const password = field(body, "password");
+  // O login nunca cria contas: o dono já existe e é o único com acesso à gestão.
   const { data, error } = await supabase.auth.signInWithPassword({ email: address, password });
-  if (error) {
-    // Sem proprietário cadastrado, o primeiro acesso cria a conta do dono.
-    const { exists } = await ownerExists();
-    if (exists) throw new Error("Credenciais inválidas.");
-    const su = await supabase.auth.signUp({
-      email: address,
-      password,
-      options: { emailRedirectTo: window.location.origin },
-    });
-    if (su.error) throw new Error(authErrorPt(su.error.message));
-    if (!su.data.session)
-      throw new Error(
-        "Conta do proprietário criada. Confirme pelo link enviado ao seu e-mail e entre novamente.",
-      );
-    return { token: "session", user: { email: address, role: "owner" } };
-  }
+  if (error) throw new Error("Credenciais inválidas.");
   try {
     await getAdminState();
   } catch {
