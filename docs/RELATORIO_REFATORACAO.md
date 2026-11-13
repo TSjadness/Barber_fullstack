@@ -832,7 +832,7 @@ todos os clientes estiverem atualizados, dá para tornar a versão obrigatória 
 
 - **Por WhatsApp:** no máximo **2 reservas ativas** (pendente/confirmado) ainda por acontecer. Telefone comparado sem máscara e sem o código 55. Canceladas, concluídas e passadas não contam.
 - **Por conexão (IP):** no máximo **5 reservas por hora**. No Supabase fica na tabela `booking_rate_limits` só um HMAC do IP (chave do servidor), nunca o IP; registros com mais de 1 hora são apagados a cada reserva. No servidor local fica em memória.
-- **Resposta:** 403 com mensagem clara; o site mostra o aviso sem voltar à escolha de horário.
+- **Resposta:** 403 com a mensagem e o motivo (`reason`: `phone` ou `ip`). O site abre um modal (`BookingLimitDialog`) com "Fechar" e "Falar com a barbearia", que abre o WhatsApp cadastrado em Configurações com uma mensagem pronta (nome, serviços, data, horário e profissional do pedido). Sem WhatsApp cadastrado, só "Fechar". Ao fechar, o pedido continua preenchido.
 - **Gestão:** agendamentos feitos pelo dono no painel não têm limite.
 - **Código:** `checkPhoneLimit`/`phoneKey` em `frontend/src/lib/barber-rules.ts` e `backend/src/rules.mjs`; `createBooking` em `barber.functions.ts`; `POST /bookings` em `backend/src/server.mjs`.
 - **Testes:** `frontend/src/test/booking-limits.test.ts` e `backend/tests/limits.test.mjs`.

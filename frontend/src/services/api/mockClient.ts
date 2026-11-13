@@ -47,6 +47,7 @@ export async function mockRequest(route: ApiRoute, options: ApiRequest = {}): Pr
   if (!response.ok)
     throw new ApiError(String(record["error"] || `Erro HTTP ${response.status}`), {
       status: response.status,
+      reason: typeof record["reason"] === "string" ? record["reason"] : undefined,
     });
   if (route === "/login" && typeof record["token"] === "string") mockToken.set(record["token"]);
   return result;

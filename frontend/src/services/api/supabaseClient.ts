@@ -17,7 +17,10 @@ type Json = Record<string, unknown>;
 
 const unwrap = <T extends Json>(r: T, status = 400) => {
   if (r && typeof r === "object" && "error" in r && r["error"])
-    throw new ApiError(String(r["error"]), { status });
+    throw new ApiError(String(r["error"]), {
+      status,
+      reason: typeof r["reason"] === "string" ? r["reason"] : undefined,
+    });
   return r;
 };
 

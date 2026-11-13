@@ -35,7 +35,7 @@ test('limites da API local',async(t)=>{
    assert.equal((await reserve('11:00','79999990001')).status,201);
    const third=await reserve('12:00','5579999990001');
    assert.equal(third.status,403);
-   assert.match(third.data.error,/2 agendamentos ativos/);
+   assert.match(third.data.error,/2 agendamentos ativos/);assert.equal(third.data.reason,'phone');
   });
   await t.test('sexta reserva da mesma conexão na hora é recusada (403)',async()=>{
    assert.equal((await reserve('13:00','79999990002')).status,201);
@@ -43,7 +43,7 @@ test('limites da API local',async(t)=>{
    assert.equal((await reserve('15:00','79999990003')).status,201); // 5ª da conexão
    const sixth=await reserve('16:00','79999990004');
    assert.equal(sixth.status,403);
-   assert.match(sixth.data.error,/Muitas reservas/);
+   assert.match(sixth.data.error,/Muitas reservas/);assert.equal(sixth.data.reason,'ip');
   });
  }finally{child.kill();await new Promise(r=>{child.once('exit',r);setTimeout(r,2000);});rmSync(directory,{recursive:true,force:true});}
 });

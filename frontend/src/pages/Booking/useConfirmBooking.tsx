@@ -1,11 +1,13 @@
 import { useCallback, useRef } from "react";
+import { LIMIT_TITLE, isLimitReason, limitWhatsAppLink, limitWhatsAppText } from "./bookingLimit";
 import { BookingConfirmed } from "./components/BookingConfirmed";
+import { BookingLimitDialog } from "./components/BookingLimitDialog";
 import { useBarberData } from "@/hooks/useBarberData";
 import { useNavigation } from "@/hooks/useNavigation";
 import { useOverlay } from "@/hooks/useOverlay";
 import { notify, notifyError } from "@/scripts/notifications";
-import { findStaff, openSlots, serviceTotal } from "@/scripts/scheduling";
-import { isNetworkError, messageOf, statusOf } from "@/services/api";
+import { findStaff, openSlots, serviceList, serviceTotal } from "@/scripts/scheduling";
+import { isNetworkError, messageOf, reasonOf, statusOf } from "@/services/api";
 import { sleep } from "@/services/api/retry";
 import { createPublicBooking } from "@/services/bookingService";
 import type { BookingFlow, BookingStep } from "@/types/barber";
@@ -26,7 +28,7 @@ export function useConfirmBooking(
 ) {
   const { db, updateLocal, reloadPublic } = useBarberData();
   const { go } = useNavigation();
-  const { show, showBusy, closeModal } = useOverlay();
+  const { show, showBusy, openModal, closeModal } = useOverlay();
   const submitting = useRef(false);
 
   return useCallback(async () => {
@@ -82,6 +84,27 @@ export function useConfirmBooking(
       closeModal();
       console.error("[BarberFlow] Falha na confirmação:", e);
       const status = statusOf(e) ?? 0;
+      const reason = reasonOf(e);
+      if (status === 403 && isLimitReason(reason)) {
+        // Limite de reservas: modal com atalho para o WhatsApp da barbearia. O pedido
+        // (nome, WhatsApp, serviços e horário) continua preenchido ao fechar.
+        const text = limitWhatsAppText(reason, {
+          customer,
+          services: serviceList(db, flow.serviceIds).map((s) => s.name),
+          date,
+          time,
+          staffName: findStaff(db, confirmStaff)?.name,
+        });
+        openModal(
+          LIMIT_TITLE[reason],
+          <BookingLimitDialog
+            reason={reason}
+            whatsappHref={limitWhatsAppLink(db.shop.whatsapp, text)}
+            onClose={closeModal}
+          />,
+        );
+        return;
+      }
       if (isNetworkError(e) || status >= 500 || !messageOf(e)) {
         notify(
           "Não foi possível confirmar o agendamento. Confira sua conexão e tente novamente.",
@@ -102,5 +125,17 @@ export function useConfirmBooking(
     } finally {
       submitting.current = false;
     }
-  }, [db, flow, setFlow, goToStep, updateLocal, reloadPublic, go, show, showBusy, closeModal]);
+  }, [
+    db,
+    flow,
+    setFlow,
+    goToStep,
+    updateLocal,
+    reloadPublic,
+    go,
+    show,
+    showBusy,
+    openModal,
+    closeModal,
+  ]);
 }

@@ -76,9 +76,9 @@ export const server=http.createServer(async(req,res)=>{
    if(ids?.length)b.serviceIds=ids;
    if(b.customer.length<3||b.customer.length>100||b.phone.length<10||b.phone.length>15)return fail(res,400,'Nome ou telefone inválido.');
    const ip=req.socket.remoteAddress||'local';
-   if(recentByIp(ip).length>=IP_BOOKING_LIMIT)return fail(res,403,IP_LIMIT_MESSAGE);
+   if(recentByIp(ip).length>=IP_BOOKING_LIMIT)return respond(res,403,{error:IP_LIMIT_MESSAGE,reason:'ip'});
    try{db.exec('BEGIN IMMEDIATE');const s=state();checkPhoneLimit(b.phone,s.bookings);checkSlot(b,s);addBooking(b);db.exec('COMMIT');recentByIp(ip).push(Date.now());return respond(res,201,{booking:b});}
-   catch(e){db.exec('ROLLBACK');if(e instanceof LimitError)return fail(res,403,e.message);if(e instanceof RuleError)return fail(res,409,e.message);throw e;}
+   catch(e){db.exec('ROLLBACK');if(e instanceof LimitError)return respond(res,403,{error:e.message,reason:e.reason});if(e instanceof RuleError)return fail(res,409,e.message);throw e;}
   }
   if(path.startsWith('/admin/')){
    const user=loggedUser(req);if(!user||user.role!=='owner')return fail(res,401,'Acesso restrito ao proprietário.');

@@ -271,4 +271,20 @@ export const bookingStyles = css`
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
   }
+
+  /* Modal de limite de reservas: reaproveita o layout de .bf-confirm-delete (ConfirmDialog),
+     com ícone dourado em vez de vermelho. Seletores com uma classe a mais para vencer as
+     regras do ConfirmDialog, que vêm depois na cascata. */
+  .modal .bf-limit-dialog .bf-confirm-delete-icon {
+    background: color-mix(in srgb, var(--gold) 14%, var(--panel));
+    color: var(--gold);
+    border-color: color-mix(in srgb, var(--gold) 40%, var(--line));
+  }
+  .modal .bf-limit-dialog .bf-confirm-delete-actions > a.btn {
+    text-decoration: none;
+  }
+  .modal .bf-confirm-delete-actions.bf-limit-single {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 220px;
+  }
 `;

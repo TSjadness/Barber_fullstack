@@ -152,13 +152,13 @@ export const createBooking = createServerFn({ method: "POST" })
       return { error: "Nome ou telefone inválido." };
     const ipKey = await clientKey();
     if (ipKey && (await rateLimits.exceeded(ipKey)))
-      return { error: IP_LIMIT_MESSAGE, limit: true };
+      return { error: IP_LIMIT_MESSAGE, limit: true, reason: "ip" };
     try {
       const db = await loadAll();
       checkPhoneLimit(ph, db.bookings);
       checkSlot(b, db);
     } catch (e) {
-      if (e instanceof LimitError) return { error: e.message, limit: true };
+      if (e instanceof LimitError) return { error: e.message, limit: true, reason: e.reason };
       if (e instanceof RuleError) return { error: e.message };
       throw e;
     }

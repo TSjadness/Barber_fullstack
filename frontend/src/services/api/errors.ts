@@ -2,11 +2,17 @@
 export class ApiError extends Error {
   status: number | undefined;
   network: boolean;
-  constructor(message: string, options: { status?: number; network?: boolean } = {}) {
+  /** Motivo informado pelo servidor (ex.: `phone`/`ip` na recusa por limite de reservas). */
+  reason: string | undefined;
+  constructor(
+    message: string,
+    options: { status?: number; network?: boolean; reason?: string | undefined } = {},
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = options.status;
     this.network = options.network ?? false;
+    this.reason = options.reason;
   }
 }
 
@@ -34,6 +40,8 @@ export function asApiError(e: unknown): Error {
 }
 
 export const statusOf = (e: unknown) => (e instanceof ApiError ? e.status : undefined);
+
+export const reasonOf = (e: unknown) => (e instanceof ApiError ? e.reason : undefined);
 
 export const isNetworkError = (e: unknown) => e instanceof ApiError && e.network;
 

@@ -66,3 +66,37 @@ describe("reserva recusada por limite (modo Supabase)", () => {
     ).rejects.toMatchObject({ status: 409 });
   });
 });
+
+describe("modal de limite: mensagem e link do WhatsApp", async () => {
+  const { limitWhatsAppLink, limitWhatsAppText } = await import("@/pages/Booking/bookingLimit");
+  const request = {
+    customer: "Maria Lima",
+    services: ["Corte masculino", "Barba"],
+    date: "2031-03-04",
+    time: "10:00",
+    staffName: "Rafael",
+  };
+
+  it("monta a mensagem com nome, serviços, data, horário e profissional", () => {
+    expect(limitWhatsAppText("phone", request)).toBe(
+      "Olá! Sou Maria Lima. Já tenho dois agendamentos ativos e gostaria de realizar mais um: Corte masculino + Barba em 04/03/2031 às 10:00 com Rafael. Poderiam verificar a disponibilidade para mim?",
+    );
+    expect(limitWhatsAppText("ip", request)).toContain("atingi o limite de reservas");
+  });
+
+  it("usa o WhatsApp cadastrado da barbearia (com 55) e esconde o botão sem número", () => {
+    const href = limitWhatsAppLink("(79) 99999-8888", "Olá! Tudo bem?");
+    expect(href).toBe("https://wa.me/5579999998888?text=Ol%C3%A1!%20Tudo%20bem%3F");
+    expect(limitWhatsAppLink("", "x")).toBe("");
+  });
+
+  it("o motivo do limite chega ao site junto com o 403", async () => {
+    const { supabaseRequest } = await import("@/services/api/supabaseClient");
+    const { reasonOf } = await import("@/services/api");
+    createBooking.mockResolvedValue({ error: "Limite", limit: true, reason: "phone" });
+    const error = await supabaseRequest("/bookings", { method: "POST", body: "{}" }).catch(
+      (e: unknown) => e,
+    );
+    expect(reasonOf(error)).toBe("phone");
+  });
+});

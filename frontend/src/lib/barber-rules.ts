@@ -65,8 +65,16 @@ export const PHONE_LIMIT_MESSAGE =
 export const IP_LIMIT_MESSAGE =
   "Muitas reservas feitas desta conexão na última hora. Tente novamente mais tarde ou fale com a barbearia.";
 
-/** Recusa por limite de reservas (o site mostra a mensagem sem voltar à escolha de horário). */
-export class LimitError extends RuleError {}
+export type LimitReason = "phone" | "ip";
+
+/** Recusa por limite de reservas (o site abre o modal de limite, sem voltar à escolha de horário). */
+export class LimitError extends RuleError {
+  reason: LimitReason;
+  constructor(message: string, reason: LimitReason) {
+    super(message);
+    this.reason = reason;
+  }
+}
 
 /** Telefone só com dígitos e sem o código do país (55), para comparar reservas. */
 export function phoneKey(value: unknown) {
@@ -87,7 +95,7 @@ export function checkPhoneLimit(phone: string, bookings: Booking[], now = shopNo
       phoneKey(b["phone"]) === key &&
       (b.date > now.date || (b.date === now.date && mins(b.time) >= now.minutes)),
   ).length;
-  if (active >= PHONE_BOOKING_LIMIT) throw new LimitError(PHONE_LIMIT_MESSAGE);
+  if (active >= PHONE_BOOKING_LIMIT) throw new LimitError(PHONE_LIMIT_MESSAGE, "phone");
 }
 
 /** Service ids of a booking (supports multi-service bookings). */
