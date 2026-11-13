@@ -8,6 +8,8 @@ const file = process.env.BARBER_DB_PATH || resolve(root, 'data/barberflow.sqlite
 mkdirSync(dirname(file), {recursive:true});
 export const db = new DatabaseSync(file);
 db.exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON;');
+/** Gravação recusada: o estado mudou depois que a tela o leu (outra aba ou aparelho). */
+export class ConflictError extends Error{}
 export const json = x=>JSON.stringify(x);
 export const parse = x=>JSON.parse(x);
 export function migrate(){
@@ -23,17 +25,27 @@ export function migrate(){
 export function state(){
  const r=db.prepare('SELECT * FROM app_state WHERE id=1').get();
  if(!r)throw Error('Banco sem dados iniciais. Execute npm run db:seed');
- return {shop:parse(r.shop),services:parse(r.services),staff:parse(r.staff),notices:parse(r.notices),payments:parse(r.payments),bookings:db.prepare('SELECT data FROM bookings ORDER BY date,time').all().map(x=>parse(x.data))};
+ return {version:r.updated_at,shop:parse(r.shop),services:parse(r.services),staff:parse(r.staff),notices:parse(r.notices),payments:parse(r.payments),bookings:db.prepare('SELECT data FROM bookings ORDER BY date,time').all().map(x=>parse(x.data))};
 }
-export function saveState(s){
+/**
+ * Grava o estado da gestão. Agendamentos ausentes do envio são preservados; só `deletions` é apagado.
+ * Controle de versão otimista: com `expected` (a `version` lida pela tela), só grava se o estado
+ * não mudou desde então; senão lança ConflictError sem gravar nada. Devolve a nova versão.
+ */
+export function saveState(s,deletions=[],expected){
  db.exec('BEGIN IMMEDIATE');
  try{
-  db.prepare('UPDATE app_state SET shop=?,services=?,staff=?,notices=?,payments=?,updated_at=CURRENT_TIMESTAMP WHERE id=1').run(json(s.shop),json(s.services),json(s.staff),json(s.notices),json(s.payments||[]));
-  const old=new Set(db.prepare('SELECT id FROM bookings').all().map(x=>x.id));
+  const current=db.prepare('SELECT updated_at FROM app_state WHERE id=1').get()?.updated_at;
+  if(expected!==undefined&&expected!==current)throw new ConflictError('Versão desatualizada.');
+  let version=new Date().toISOString();
+  if(version===current)version=new Date(Date.now()+1).toISOString();
+  db.prepare('UPDATE app_state SET shop=?,services=?,staff=?,notices=?,payments=?,updated_at=? WHERE id=1').run(json(s.shop),json(s.services),json(s.staff),json(s.notices),json(s.payments||[]),version);
+  const removed=new Set(deletions);
   const insert=db.prepare('INSERT INTO bookings(id,date,time,staff_id,service_id,status,data) VALUES(?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET date=excluded.date,time=excluded.time,staff_id=excluded.staff_id,service_id=excluded.service_id,status=excluded.status,data=excluded.data');
-  for(const b of s.bookings){insert.run(b.id,b.date,b.time,b.staffId,b.serviceId,b.status,json(b));old.delete(b.id);}
-  const del=db.prepare('DELETE FROM bookings WHERE id=?');for(const id of old)del.run(id);
+  for(const b of s.bookings)if(!removed.has(b.id))insert.run(b.id,b.date,b.time,b.staffId,b.serviceId,b.status,json(b));
+  const del=db.prepare('DELETE FROM bookings WHERE id=?');for(const id of removed)del.run(id);
   db.exec('COMMIT');
+  return version;
  }catch(e){db.exec('ROLLBACK');throw e;}
 }
 export function addBooking(b){db.prepare('INSERT INTO bookings(id,date,time,staff_id,service_id,status,data) VALUES(?,?,?,?,?,?,?)').run(b.id,b.date,b.time,b.staffId,b.serviceId,b.status,json(b));}

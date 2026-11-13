@@ -1,6 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { RuleError, checkSlot, validateState, type Booking } from "./barber-rules";
+import {
+  RuleError,
+  checkSlot,
+  prepareAdminSave,
+  validateState,
+  type Booking,
+} from "./barber-rules";
 
 type Row = { data: Booking };
 
@@ -8,6 +14,9 @@ async function admin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin;
 }
+
+const STALE_STATE =
+  "Os dados foram alterados em outra aba ou aparelho. A tela foi atualizada: confira e refaça a alteração.";
 
 async function loadAll() {
   const sb = await admin();
@@ -17,6 +26,8 @@ async function loadAll() {
   ]);
   if (e1 || e2 || !st) throw new Error("Erro ao carregar dados.");
   return {
+    /** Versão do estado (updated_at): a gestão a devolve ao salvar (controle otimista). */
+    version: String(st.updated_at),
     shop: st.shop as any,
     services: st.services as any[],
     staff: st.staff as any[],
@@ -38,7 +49,7 @@ const rowOf = (b: Booking) => ({
 
 /** Public catalog + busy slots, without customer names or phones. */
 export const getPublicState = createServerFn({ method: "GET" }).handler(async () => {
-  const db = await loadAll();
+  const { version: _version, ...db } = await loadAll();
   return {
     ...db,
     payments: [],
@@ -116,14 +127,23 @@ export const saveAdminState = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async ({ data: next, context }) => {
     await assertOwner(context);
+    if (next?.version !== undefined && typeof next.version !== "string")
+      return { error: "Versão inválida." };
+    let plan: ReturnType<typeof prepareAdminSave>;
     try {
       validateState(next);
+      // Integridade, exclusões explícitas e regras de agendamento (ver barber-rules.ts).
+      plan = prepareAdminSave(await loadAll(), next);
     } catch (e) {
       if (e instanceof RuleError) return { error: e.message };
       throw e;
     }
     const sb = context.supabase;
-    const { error: e1 } = await sb
+    // Controle de versão otimista: com `version` (lida pela tela), o UPDATE só atinge a linha se
+    // ninguém gravou depois. Nenhuma linha atualizada = aba/aparelho desatualizado: nada é gravado.
+    let version = new Date().toISOString();
+    if (version === next.version) version = new Date(Date.now() + 1).toISOString();
+    let query = sb
       .from("app_state")
       .update({
         shop: next.shop,
@@ -131,20 +151,25 @@ export const saveAdminState = createServerFn({ method: "POST" })
         staff: next.staff,
         notices: next.notices,
         payments: next.payments ?? [],
-        updated_at: new Date().toISOString(),
+        updated_at: version,
       })
       .eq("id", 1);
+    if (next.version !== undefined) query = query.eq("updated_at", next.version);
+    const { data: updated, error: e1 } = await query.select("updated_at");
     if (e1) return { error: "Erro ao salvar." };
-    const rows = (next.bookings as Booking[]).map(rowOf);
+    if (!updated?.length) return { error: STALE_STATE, conflict: true };
+    version = String(updated[0]!.updated_at);
+    // Só os agendamentos enviados são gravados; os ausentes do envio são preservados.
+    const deleted = new Set(plan.deletions);
+    const rows = (next.bookings as Booking[]).filter((b) => !deleted.has(b.id)).map(rowOf);
     if (rows.length) {
       const { error } = await sb.from("bookings").upsert(rows);
       if (error) return { error: "Erro ao salvar agendamentos." };
     }
-    const { data: existing } = await sb.from("bookings").select("id");
-    const keep = new Set(rows.map((r) => r.id));
-    const gone = (existing ?? [])
-      .map((r: { id: string }) => r.id)
-      .filter((id: string) => !keep.has(id));
-    if (gone.length) await sb.from("bookings").delete().in("id", gone);
-    return { ok: true };
+    // Exclusão definitiva apenas do que foi pedido explicitamente (e validado).
+    if (plan.deletions.length) {
+      const { error } = await sb.from("bookings").delete().in("id", plan.deletions);
+      if (error) return { error: "Erro ao excluir agendamentos." };
+    }
+    return { ok: true, version };
   });

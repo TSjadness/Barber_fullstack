@@ -1,9 +1,14 @@
 # Routes
 
 TanStack Start uses **file-based routing**. Every `.tsx` file in this directory
-defines a route. Do **not** create `src/pages/`, `src/routes/_app/index.tsx`, or
-`app/layout.tsx` — those are Next.js / Remix conventions. The only root layout
-is `src/routes/__root.tsx`.
+defines a route. Do **not** create `app/layout.tsx` — that is a Next.js / Remix
+convention. The only root layout is `src/routes/__root.tsx`.
+
+`src/pages/` (outside this folder) holds the barber screens as plain components; it
+is not a routing directory. `/` and `/login` are children of the pathless layout
+`_barber.tsx`, which mounts `src/App.tsx` once so switching between the site and the
+admin panel never remounts the app. Files/folders prefixed with `-` (e.g. `-shared/`)
+are ignored by the route generator.
 
 ## Conventions
 

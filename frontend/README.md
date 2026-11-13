@@ -1,15 +1,50 @@
 # Frontend
 
-React 19 + TypeScript + TanStack Start + Styled Components (estrutura preservada do projeto enviado).
+React 19 + TypeScript + TanStack Start (Vite) + styled-components.
 
 ```bash
 npm install
-npm run dev
-npm run test
+npm run dev      # http://localhost:8080
+npm run test     # vitest
+npm run lint
+npm run build
 ```
 
-Os componentes de `src/barber/components` e `src/components/ui` seguem a pasta por componente; os `styles.ts` são Styled Components, com tipagens em `types.ts` onde aplicável. `src/components/BarberApp` contém shell React com Styled Components.
+Para usar o backend local (SQLite) em vez do Supabase, defina `VITE_API_MODE=mock` e
+`VITE_API_URL=http://localhost:3333` (veja `env.local.example` e `backend/README.md`).
 
-**Limitação importante:** o arquivo `public/barber/app.js` permanece como renderizador imperativo da maior parte das telas, com `app.css` e `icons.js`, para não alterar o layout ou quebrar recursos; a migração integral dessas telas para JSX e Styled Components **ainda não foi realizada**. Não apague esses arquivos.
+## Estrutura
 
-O mock é uma cópia dos dados iniciais da migration, não dos dados reais do Supabase. A integração com Supabase mantém as configurações e funções originais. As migrations foram movidas para `../backend/drizzle`.
+```text
+src/
+├── App.tsx            # providers + troca de tela (site, agendamento, gestão)
+├── routes/            # rotas do TanStack Start (/ e /login) — entrada da aplicação
+├── pages/             # telas: Public, Booking, Login e Admin (uma pasta por seção)
+├── components/        # componentes reutilizáveis (index.tsx, styles.ts, types.ts)
+├── contexts/          # estado compartilhado (dados, navegação, overlay, preferências, gestão)
+├── hooks/             # hooks de acesso aos contextos e comportamentos (menu mobile, tela cheia...)
+├── services/          # API: modo mock (backend local) e Supabase; serviços por domínio
+├── scripts/           # rotinas independentes: agenda/disponibilidade, notificações, CSV, foto
+├── utils/             # funções puras (datas, formatação, paginação, redes sociais)
+├── constants/         # textos fixos, menus, chaves de armazenamento
+├── types/             # contratos de dados (AppState, Booking, Staff...)
+├── styles/            # tokens do tema, keyframes, base global e a composição dos estilos
+└── lib/, integrations/ # server functions e cliente Supabase
+```
+
+### Estilos
+
+Os estilos do antigo `public/barber/app.css` foram distribuídos para o `styles.ts` de cada
+componente/página, mantendo os nomes de classe originais. `src/styles/index.ts` junta todos
+em um `createGlobalStyle` **em ordem de cascata**: ao mover regras entre módulos, mantenha as
+sobrescritas de mesma especificidade depois das regras que elas sobrescrevem. A base
+(`styles/theme.ts`, `animations.ts`, `global.ts`) é inserida no `<head>` pelas rotas para valer
+antes da hidratação.
+
+### Arquivos estáticos
+
+`public/assets/images/` guarda o logo. As fotos dos profissionais ficam em
+`public/barber/assets/` porque os dados salvos (seed e Supabase) apontam para esse caminho.
+
+O mock (`src/mock/db.json`) é uma cópia dos dados iniciais da migration, não dos dados reais do
+Supabase. As migrations ficam em `../backend/drizzle`.

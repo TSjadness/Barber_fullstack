@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkSlot } from "@/lib/barber-rules";
+import { checkSlot, validateBookingChanges, type Notice } from "@/lib/barber-rules";
 const db = {
   services: [{ id: "s1", name: "Corte", duration: 30, price: 40, active: true }],
   staff: [
@@ -12,7 +12,7 @@ const db = {
       active: true,
     },
   ],
-  notices: [] as any[],
+  notices: [] as Notice[],
   bookings: [
     {
       id: "x",
@@ -58,4 +58,67 @@ describe("multi-service bookings", () => {
     expect(() => checkSlot(multi("09:00"), db2, now)).not.toThrow());
   it("rejects when the summed duration passes closing time", () =>
     expect(() => checkSlot(multi("17:10"), db2, now)).toThrow("expediente"));
+});
+
+describe("bloqueios por profissional (servidor)", () => {
+  const MON = "2030-01-07";
+  const p2 = { ...db.staff[0]!, id: "p2", name: "Alê" };
+  const block = (staffId: string): Notice => ({
+    id: "n" + staffId,
+    date: MON,
+    staffId,
+    type: "block",
+  });
+  const withBlock = (staffId: string) => ({
+    ...db,
+    staff: [...db.staff, p2],
+    notices: [block(staffId)],
+  });
+
+  it("reserva pública recusa o profissional bloqueado", () =>
+    expect(() => checkSlot(b("11:00"), withBlock("p1"), now)).toThrow("indisponível"));
+  it("reserva pública aceita outro profissional na data bloqueada para o primeiro", () =>
+    expect(() => checkSlot({ ...b("11:00"), staffId: "p2" }, withBlock("p1"), now)).not.toThrow());
+  it("bloqueio geral recusa qualquer profissional", () =>
+    expect(() => checkSlot({ ...b("11:00"), staffId: "p2" }, withBlock("all"), now)).toThrow(
+      "indisponível",
+    ));
+});
+
+describe("gravação da gestão (validateBookingChanges)", () => {
+  const MON = "2030-01-07";
+  const p2 = { ...db.staff[0]!, id: "p2", name: "Alê" };
+  const existing = { ...b("10:00"), id: "x" };
+  const base = { ...db, staff: [...db.staff, p2], bookings: [existing] };
+  const blockP1: Notice = { id: "n1", date: MON, staffId: "p1", type: "block" };
+  const save = (next: typeof base) => () => validateBookingChanges(base, next);
+
+  it("aceita agendamento manual novo em horário livre", () =>
+    expect(save({ ...base, bookings: [existing, { ...b("14:05"), id: "m" }] })).not.toThrow());
+  it("recusa agendamento manual novo em dia bloqueado do profissional", () =>
+    expect(
+      save({ ...base, notices: [blockP1], bookings: [existing, { ...b("14:00"), id: "m" }] }),
+    ).toThrow("indisponível"));
+  it("recusa reagendamento para dia bloqueado do profissional", () =>
+    expect(
+      save({ ...base, notices: [blockP1], bookings: [{ ...existing, date: MON, time: "15:00" }] }),
+    ).toThrow("indisponível"));
+  it("aceita reagendamento para outro profissional livre na data bloqueada", () =>
+    expect(
+      save({ ...base, notices: [blockP1], bookings: [{ ...existing, staffId: "p2" }] }),
+    ).not.toThrow());
+  it("não revalida agendamento existente sem mudança de vaga (bloqueio criado depois)", () =>
+    expect(
+      save({ ...base, notices: [blockP1], bookings: [{ ...existing, status: "concluido" }] }),
+    ).not.toThrow());
+  it("recusa conflito com outro atendimento", () =>
+    expect(save({ ...base, bookings: [existing, { ...b("10:10"), id: "m" }] })).toThrow(
+      "reservado",
+    ));
+  it("ignora agendamentos cancelados", () =>
+    expect(
+      save({ ...base, bookings: [existing, { ...b("10:10"), id: "m", status: "cancelado" }] }),
+    ).not.toThrow());
+  it("recusa horário fora do expediente na remarcação", () =>
+    expect(save({ ...base, bookings: [{ ...existing, time: "17:50" }] })).toThrow("expediente"));
 });

@@ -1,8 +1,9 @@
 /** Local-only persistent BarberFlow API; never expose this development server to the internet. */
 import http from 'node:http';
 import {randomUUID,randomInt} from 'node:crypto';
-import {db,seed,state,saveState,addBooking,checkPassword,hashPassword,digest} from './database/db.mjs';
-import {checkSlot,validateState,RuleError} from './rules.mjs';
+import {db,seed,state,saveState,addBooking,checkPassword,hashPassword,digest,ConflictError} from './database/db.mjs';
+const CONFLICT='Os dados foram alterados em outra aba ou aparelho. A tela foi atualizada: confira e refaça a alteração.';
+import {checkSlot,validateState,prepareAdminSave,RuleError} from './rules.mjs';
 if(process.env.NODE_ENV==='production')throw Error('Backend mock não deve ser utilizado em produção.');
 seed();
 const HOST='127.0.0.1', PORT=Number(process.env.MOCK_PORT||3333);
@@ -13,7 +14,7 @@ function loggedUser(req){
  const token=/^Bearer ([a-zA-Z0-9-]+)$/.exec(req.headers.authorization||'')?.[1];if(!token)return null;
  const u=db.prepare('SELECT u.id,u.email,u.role FROM local_sessions s JOIN local_users u ON s.user_id=u.id WHERE s.token_hash=? AND s.expires_at>?').get(digest(token),Date.now());return u||null;
 }
-function publicState(){const s=state();return {...s,payments:[],bookings:s.bookings.map(({id,date,time,staffId,serviceId,serviceIds,status})=>({id,date,time,staffId,serviceId,serviceIds,status}))};}
+function publicState(){const {version,...s}=state();return {...s,payments:[],bookings:s.bookings.map(({id,date,time,staffId,serviceId,serviceIds,status})=>({id,date,time,staffId,serviceId,serviceIds,status}))};}
 export const server=http.createServer(async(req,res)=>{
  const origin=req.headers.origin;
  if(origin){if(!allowed.has(origin))return fail(res,403,'Origem não autorizada.');res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');res.setHeader('Access-Control-Allow-Headers','content-type,authorization');res.setHeader('Access-Control-Allow-Methods','GET,POST,PUT,OPTIONS');}
@@ -23,7 +24,10 @@ export const server=http.createServer(async(req,res)=>{
   let body={};
   if(['POST','PUT','PATCH'].includes(req.method)){
    if(req.headers['content-type']?.split(';')[0]!=='application/json')return fail(res,415,'Envie application/json.');
-   let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>2_000_000)return fail(res,413,'Requisição muito grande.');}
+   // Corpo grande demais: responde 413 e continua lendo (descartando) até o fim. Sair do
+   // for-await destruiria o socket e o cliente receberia ECONNRESET em vez do 413.
+   let raw='',tooBig=false;for await(const chunk of req){if(tooBig)continue;raw+=chunk;if(raw.length>2_000_000){tooBig=true;raw='';res.setHeader('connection','close');fail(res,413,'Requisição muito grande.');}}
+   if(tooBig)return;
    try{body=raw?JSON.parse(raw):{};}catch{return fail(res,400,'JSON inválido.');}
   }
   if(req.method==='GET'&&path==='/health')return respond(res,200,{ok:true,mode:'mock',database:'sqlite'});
@@ -74,8 +78,11 @@ export const server=http.createServer(async(req,res)=>{
    const user=loggedUser(req);if(!user||user.role!=='owner')return fail(res,401,'Acesso restrito ao proprietário.');
    if(req.method==='GET'&&path==='/admin/state')return respond(res,200,state());
    if(req.method==='PUT'&&path==='/admin/state'){
-    try{validateState(body);}catch(e){if(e instanceof RuleError)return fail(res,400,e.message);throw e;}
-    saveState(body);return respond(res,200,{ok:true});
+    if(body.version!==undefined&&typeof body.version!=='string')return fail(res,400,'Versão inválida.');
+    let plan;try{validateState(body);plan=prepareAdminSave(state(),body);}catch(e){if(e instanceof RuleError)return fail(res,400,e.message);throw e;}
+    // Sem `version` (cliente antigo) grava como antes; com ela, recusa estado desatualizado (409).
+    try{return respond(res,200,{ok:true,version:saveState(body,plan.deletions,body.version)});}
+    catch(e){if(e instanceof ConflictError)return fail(res,409,CONFLICT);throw e;}
    }
   }
   return fail(res,404,'Rota não encontrada.');

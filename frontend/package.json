@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
+    "test:secrets": "vite build && vitest run src/test/secrets.test.ts",
     "test:watch": "vitest"
   },
   "overrides": {

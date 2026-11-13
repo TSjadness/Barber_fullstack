@@ -9,68 +9,92 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as LoginRouteImport } from './routes/login'
+import { Route as BarberRouteImport } from './routes/_barber'
+import { Route as BarberIndexRouteImport } from './routes/_barber/index'
+import { Route as BarberLoginRouteImport } from './routes/_barber/login'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const BarberRoute = BarberRouteImport.update({
+  id: '/_barber',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginRoute = LoginRouteImport.update({
+const BarberIndexRoute = BarberIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BarberRoute,
+} as any)
+const BarberLoginRoute = BarberLoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => BarberRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/login': typeof LoginRoute
+  '/': typeof BarberIndexRoute
+  '/login': typeof BarberLoginRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/login': typeof LoginRoute
+  '/login': typeof BarberLoginRoute
+  '/': typeof BarberIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/login': typeof LoginRoute
+  '/_barber': typeof BarberRouteWithChildren
+  '/_barber/login': typeof BarberLoginRoute
+  '/_barber/': typeof BarberIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login'
-  id: '__root__' | '/' | '/login'
+  to: '/login' | '/'
+  id: '__root__' | '/_barber' | '/_barber/login' | '/_barber/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  LoginRoute: typeof LoginRoute
+  BarberRoute: typeof BarberRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
+    '/_barber': {
+      id: '/_barber'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof BarberRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/login': {
-      id: '/login'
+    '/_barber/': {
+      id: '/_barber/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof BarberIndexRouteImport
+      parentRoute: typeof BarberRoute
+    }
+    '/_barber/login': {
+      id: '/_barber/login'
       path: '/login'
       fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof BarberLoginRouteImport
+      parentRoute: typeof BarberRoute
     }
   }
 }
 
+interface BarberRouteChildren {
+  BarberLoginRoute: typeof BarberLoginRoute
+  BarberIndexRoute: typeof BarberIndexRoute
+}
+
+const BarberRouteChildren: BarberRouteChildren = {
+  BarberLoginRoute: BarberLoginRoute,
+  BarberIndexRoute: BarberIndexRoute,
+}
+
+const BarberRouteWithChildren =
+  BarberRoute._addFileChildren(BarberRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  LoginRoute: LoginRoute,
+  BarberRoute: BarberRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
