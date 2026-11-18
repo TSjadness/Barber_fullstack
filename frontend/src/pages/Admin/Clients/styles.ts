@@ -8,6 +8,11 @@ import { css } from "styled-components";
  */
 export const clientsStyles = css`
   @media (max-width: 760px) {
+    /* Busca, "Atendido por" e Limpar empilhados, cada um em linha inteira. */
+    .admin .bf-client-filter {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 14px;
+    }
     .admin .bf-client-filter > .filter-actions {
       grid-column: 1 / -1;
       display: block;
@@ -20,7 +25,7 @@ export const clientsStyles = css`
       justify-content: center;
       width: 100%;
       min-width: 0;
-      min-height: 42px;
+      min-height: 44px;
     }
   }
 `;

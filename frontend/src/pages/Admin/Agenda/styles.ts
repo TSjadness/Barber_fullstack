@@ -381,7 +381,7 @@ export const agendaStyles = css`
       border-radius: 12px;
       padding: 10px 34px 10px 14px;
       color: var(--text);
-      background: var(--panel);
+      background-color: var(--panel);
       border: 1px solid var(--line);
       font-size: 14px;
       font-weight: 600;
@@ -443,7 +443,7 @@ export const agendaStyles = css`
     min-height: 44px;
     border-radius: 12px;
     border: 1px solid var(--line);
-    background: var(--panel);
+    background-color: var(--panel);
     color: var(--text);
     padding: 10px 34px 10px 12px;
     font-size: 13px;
@@ -493,10 +493,20 @@ export const agendaStyles = css`
     .premium-agenda .day-nav > input[type="date"] {
       min-height: 44px;
       padding: 8px 10px;
+      /* Garante que o date do iOS fique contido na trilha central do grid. */
+      overflow: hidden;
+      position: relative;
+      z-index: 0;
+    }
+    /* Setas de navegação sempre acima do campo de data e clicáveis. */
+    .premium-agenda .day-nav > button {
+      position: relative;
+      z-index: 1;
+      min-height: 44px;
     }
     .premium-agenda .day-nav select {
       min-height: 44px;
-      padding: 8px 28px 8px 12px;
+      padding: 8px 34px 8px 12px;
     }
     .premium-agenda .bf-agenda-staff-filter {
       display: flex;

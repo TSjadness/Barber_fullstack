@@ -54,6 +54,13 @@ export const loadingOverlayStyles = css`
     border-top-color: var(--gold2);
     border-radius: 50%;
     animation: spin 0.75s linear infinite;
+    will-change: transform;
+  }
+  /* Mesmo motivo do spinner inicial (global.ts): não congelar com "Reduzir movimento". */
+  @media (prefers-reduced-motion: reduce) {
+    .spinner {
+      animation: spin 1.6s linear infinite !important;
+    }
   }
   @media (max-width: 700px) {
     .confirm-card {

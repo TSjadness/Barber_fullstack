@@ -31,8 +31,8 @@ export const calendarStyles = css`
   .bcal-nav select {
     min-height: 38px;
     border-radius: 10px;
-    padding: 6px 28px 6px 10px;
-    background: var(--panel2);
+    padding: 6px 34px 6px 10px;
+    background-color: var(--panel2);
     color: var(--text);
     border: 1px solid var(--line);
     font-weight: 600;
@@ -559,6 +559,44 @@ export const calendarStyles = css`
     .bcal-count,
     .bcal-day-num {
       transition: none !important;
+    }
+  }
+  @media (max-width: 760px) {
+    /*
+     * Mobile: Maximizar/Minimizar vira um botão compacto só com ícone (44px de toque),
+     * alinhado à direita da legenda. O rótulo segue no aria-label; desktop inalterado.
+     */
+    .bcal-shell .bcal-toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      column-gap: 10px;
+    }
+    .bcal-toolbar > .bcal-nav {
+      grid-column: 1 / -1;
+    }
+    .bcal-toolbar > .bcal-legend {
+      grid-column: 1;
+      align-self: center;
+      min-width: 0;
+    }
+    .bcal-toolbar > .btn.bcal-full-btn {
+      grid-column: 2;
+      justify-self: end;
+      align-self: center;
+      width: 44px;
+      height: 44px;
+      min-height: 44px;
+      padding: 0;
+      gap: 0;
+      border-radius: 12px;
+    }
+    .bcal-toolbar > .btn.bcal-full-btn > span {
+      display: none;
+    }
+    .bcal-nav select,
+    .bcal-nav > .btn {
+      min-height: 44px;
     }
   }
 `;

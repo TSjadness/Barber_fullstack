@@ -54,6 +54,21 @@ export const filterBarStyles = css`
     color: #8e805f;
     opacity: 0.7;
   }
+  @media (max-width: 760px) {
+    /* Mobile: pares de filtros em 2 colunas; busca (.filter-wide) e Limpar em linha inteira. */
+    .filter-bar {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px 12px;
+    }
+    .filter-bar > .filter-wide,
+    .filter-bar > .filter-actions {
+      grid-column: 1 / -1;
+    }
+    .filter-bar > .filter-actions > .filter-clear {
+      width: 100%;
+      min-height: 44px;
+    }
+  }
   .filter-clear {
     transition:
       background-color 240ms ease,

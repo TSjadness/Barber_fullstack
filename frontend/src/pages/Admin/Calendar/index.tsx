@@ -163,6 +163,7 @@ export function CalendarSection() {
             className="bcal-full-btn"
             onClick={toggle}
             aria-pressed={full}
+            aria-label={full ? "Minimizar calendário" : "Maximizar calendário"}
             title={full ? "Sair da tela cheia" : "Maximizar calendário"}
           >
             <Icon name={full ? "minimize" : "maximize"} />

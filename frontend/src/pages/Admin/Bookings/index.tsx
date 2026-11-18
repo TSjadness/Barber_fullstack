@@ -115,7 +115,7 @@ export function BookingsSection() {
             ))}
           </select>
         </label>
-        <label>
+        <label className="filter-wide">
           Cliente
           <input
             id="bfName"

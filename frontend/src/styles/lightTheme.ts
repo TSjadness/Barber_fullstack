@@ -17,7 +17,7 @@ export const lightThemeStyles = css`
   body.theme-light input,
   body.theme-light select,
   body.theme-light textarea {
-    background: #fff;
+    background-color: #fff;
     color: #1d1b17;
     border-color: #d9d1c1;
   }

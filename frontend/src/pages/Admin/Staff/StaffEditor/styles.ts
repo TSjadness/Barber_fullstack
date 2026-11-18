@@ -478,7 +478,7 @@ export const staffEditorStyles = css`
   .modal .bf-staff-status-select select {
     width: 100%;
     min-height: 48px;
-    padding: 10px 14px;
+    padding: 10px 38px 10px 14px;
   }
   @media (min-width: 901px) {
     .modal .bf-staff-days-checks {
