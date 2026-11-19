@@ -87,15 +87,16 @@ export const pageHeadStyles = css`
   @media (min-width: 761px) {
     .admin .bf-calendar-actions {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: minmax(120px, auto) auto;
       gap: 10px;
-      width: min(100%, 375px);
+      width: auto;
     }
   }
   @media (max-width: 760px) {
     .admin .bf-calendar-actions {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      /* "Hoje" é curto: a coluna maior fica com "Novo agendamento" em uma linha. */
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
       width: 100%;
       gap: 9px;
     }

@@ -30,9 +30,11 @@ export const modalStyles = css`
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
   }
   .modal-head h2 {
-    margin: 0 0 20px;
+    margin: 0;
   }
   .modal-bg {
     backdrop-filter: blur(10px);

@@ -292,6 +292,15 @@ export const overviewStyles = css`
     border-color: #e6dfd1;
     color: #1d1b17;
   }
+  /* Tema claro: cada atendimento vira um bloco com respiro interno e espaço entre os itens. */
+  body.theme-light .next-list {
+    gap: 10px;
+  }
+  body.theme-light .next-booking {
+    border: 1px solid #e6dfd1;
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
   body.theme-light .ov-bar {
     background: linear-gradient(0deg, #b8862f, #e2bd74) !important;
     box-shadow: none;

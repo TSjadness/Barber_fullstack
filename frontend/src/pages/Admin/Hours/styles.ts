@@ -412,7 +412,7 @@ export const hoursStyles = css`
   }
   .schedule-mini-week i.closed,
   .schedule-key i.closed {
-    background: #564348;
+    background: #bc525b;
   }
   .schedule-key {
     display: flex;
@@ -628,6 +628,10 @@ export const hoursStyles = css`
   }
   body.theme-light .schedule-key {
     color: #5e574e;
+  }
+  body.theme-light .schedule-mini-week i.closed,
+  body.theme-light .schedule-key i.closed {
+    background: #d4575f;
   }
   @media (max-width: 760px) {
     .schedule-help > .btn {

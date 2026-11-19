@@ -26,6 +26,7 @@ export const filterBarStyles = css`
     border-radius: 12px;
   }
   .filter-actions .filter-clear {
+    min-height: 44px;
     background: #edba4d;
     color: #30210b;
     border: 1px solid #e3a83e;
@@ -77,6 +78,10 @@ export const filterBarStyles = css`
       box-shadow 280ms ease,
       transform 280ms var(--bf-motion-ease),
       opacity 200ms ease;
+  }
+  /* Campos de texto com a mesma altura dos selects e do botão Limpar. */
+  .filter-bar input {
+    min-height: 44px;
   }
   .filter-bar input,
   .filter-bar select {

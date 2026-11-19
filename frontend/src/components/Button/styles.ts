@@ -226,7 +226,7 @@ export const buttonStyles = css`
       justify-content: center;
       text-align: center;
       gap: 7px;
-      white-space: normal;
+      white-space: nowrap;
       line-height: 1.25;
     }
   }
@@ -237,10 +237,17 @@ export const buttonStyles = css`
       min-height: 44px;
       padding: 10px 8px;
       justify-content: center;
-      white-space: normal;
+      white-space: nowrap;
       text-align: center;
       font-size: 11px;
       line-height: 1.3;
+    }
+  }
+  @media (max-width: 380px) {
+    /* Telas estreitas: espaçamento de letras menor para caber em uma linha sem overflow. */
+    .admin .bf-calendar-actions > .btn {
+      letter-spacing: 0.08em;
+      padding: 10px 6px;
     }
   }
   .modal .modal-head .btn.small.ghost {
